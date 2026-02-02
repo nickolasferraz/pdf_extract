@@ -1,0 +1,46 @@
+<html xmlns:th="https://www.thymeleaf.org">
+<body>
+
+<div th:if="${message}">
+    <h2 th:text="${message}"/>
+</div>
+
+<div>
+    <form method="POST" enctype="multipart/form-data" action="/api/files">
+        <table>
+            <tr><td>File to upload:</td><td><input type="file" name="file" /></td></tr>
+            <tr><td></td><td><input type="submit" value="Upload" /></td></tr>
+        </table>
+    </form>
+</div>
+
+<!-- ✅ textarea DENTRO de form separado para Excel -->
+<form method="POST" th:action="@{/api/pdf-to-excel}">
+    <table>
+        <tr>
+            <td>Campos do Excel:</td>
+            <td>
+                <textarea name="headers" rows="4" cols="40"
+                          placeholder="Ex: nome, cpf, valor, vencimento" required></textarea>
+                <input type="submit" value="→ Extrair JSON" />
+            </td>
+        </tr>
+    </table>
+</form>
+
+<div>
+    <ul>
+        <li th:each="file : ${files}">
+            <a th:href="${file}" th:text="${file}" />
+        </li>
+    </ul>
+</div>
+
+<!-- Resultado -->
+<div th:if="${result}">
+    <h3>JSON Excel:</h3>
+    <pre th:text="${result}"></pre>
+</div>
+
+</body>
+</html>
