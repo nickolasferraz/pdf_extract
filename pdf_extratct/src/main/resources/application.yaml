@@ -1,13 +1,44 @@
 spring:
   application:
     name: pdf_extratct
-    devtools:
-      livereload:
-        enabled: true
-      restart:
-        enabled: true
 
-  # Upload 10GB
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:8001/postgres
+    username: postgres
+    password: aea0d89357af91b3775c7ca4d2a99704
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 870141349909-8qk4rrg4jtm2b9p6mkpmls4et9lnv4rt.apps.googleusercontent.com
+            client-secret: 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
+            scope:
+              - email
+              - profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/google"
+
   servlet:
     multipart:
       max-file-size: 10GB
@@ -15,10 +46,8 @@ spring:
     session:
       tracking-modes: cookie
 
-  # Storage filesystem
   storage:
     location: ./uploads/
-
 
   ai:
     vertex:
@@ -31,16 +60,17 @@ spring:
               model: "gemini-2.5-flash"
               temperature: 0.1
 
-# Server
 server:
   port: 8080
   tomcat:
     max-http-form-post-size: 10GB
     max-swallow-size: 10GB
 
-# Logs DEBUG Vertex
+jwt:
+  secret: YsZQUtmOPQ/EY0Eba+0CLUQJOA4+mpkHqQDHnA0w6Uo=
+  expiration: 86400000
+
 logging:
   level:
     com.example.pdf_extratct: DEBUG
     org.springframework.ai: DEBUG
-

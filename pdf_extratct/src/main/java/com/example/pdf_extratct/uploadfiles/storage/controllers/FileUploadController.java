@@ -1,5 +1,6 @@
 package com.example.pdf_extratct.uploadfiles.storage.controllers;
 
+import java.util.List; // Import List
 import java.util.stream.Collectors;
 
 import com.example.pdf_extratct.uploadfiles.storage.exceptions.StorageException;
@@ -48,12 +49,12 @@ public class FileUploadController {
     }
 
     @PostMapping("/api/files")
-    public String handleFileUpload(@RequestParam("file") MultipartFile file,
+    public String handleFileUpload(@RequestParam("files") List<MultipartFile> files, // Changed to List<MultipartFile> and param name to "files"
                                    RedirectAttributes redirectAttributes) {
 
-        storageService.store(file);
+        storageService.storeAll(files); // Call storeAll for batch upload
         redirectAttributes.addFlashAttribute("message",
-                "You successfully uploaded " + file.getOriginalFilename() + "!");
+                "You successfully uploaded " + files.size() + " files!"); // Updated message
 
         return "redirect:/api/files/list";
     }

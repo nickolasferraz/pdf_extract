@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.*;
+import java.util.List; // Import List
 import java.util.stream.Stream;
 @Service
 public class FileSystemStorageService  implements StorageService {
@@ -24,6 +25,7 @@ public class FileSystemStorageService  implements StorageService {
         }
 
         this.rootlocation = Paths.get(properties.getLocation());
+        init(); // Call init here to ensure directory is created on service instantiation
     }
 
 
@@ -53,6 +55,13 @@ public class FileSystemStorageService  implements StorageService {
             throw new StorageException("Failed to store file", e);
         }
 
+    }
+
+    @Override
+    public void storeAll(List<MultipartFile> files) {
+        for (MultipartFile file : files) {
+            store(file); // Reuse the existing store method for each file
+        }
     }
 
     @Override
