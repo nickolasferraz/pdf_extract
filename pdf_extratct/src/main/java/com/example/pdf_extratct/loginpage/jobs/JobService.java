@@ -29,7 +29,7 @@ public class JobService {
     }
 
     public JobResponse getJobById(UserEntity user, String jobId) {
-        ProcessingJobEntity job = jobRepository.findByIdAndUser(jobId, user)
+        ProcessingJobEntity job = jobRepository.findByJobIdAndUser(jobId, user) // CORRIGIDO: findByIdAndUser para findByJobIdAndUser
                 .orElseThrow(() -> new RuntimeException("Job not found"));
         return mapToResponse(job);
     }
@@ -50,17 +50,6 @@ public class JobService {
         );
     }
 
-    @Transactional
-    public JobResponse createJob(UserEntity user, String fileName, Long fileSize) {
-        ProcessingJobEntity job = new ProcessingJobEntity();
-        job.setUser(user);
-        job.setFileName(fileName);
-        job.setFileSizeBytes(fileSize);
-        job.setStatus(JobStatus.PENDING);
-
-        job = jobRepository.save(job);
-        return mapToResponse(job);
-    }
     private JobResponse mapToResponse(ProcessingJobEntity job) {
         return new JobResponse(
                 job.getJobId(),

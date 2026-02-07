@@ -33,7 +33,7 @@ public class CreditTransactionEntity {
     @Column(name = "balance_before")
     private Integer balanceBefore;
 
-    @Column(name = "balance_after")
+    @Column(name = "balance_after", nullable = false) // Adicionado nullable = false
     private Integer balanceAfter;
 
     @Column(length = 500)

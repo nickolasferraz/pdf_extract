@@ -6,6 +6,7 @@ import com.example.pdf_extratct.loginpage.auth.AuthAccountRepository;
 import com.example.pdf_extratct.loginpage.auth.AuthProvider;
 import com.example.pdf_extratct.loginpage.user.LoginDtos.LoginRequestDto;
 import com.example.pdf_extratct.loginpage.user.LoginDtos.LoginResponseDto;
+// import com.example.pdf_extratct.loginpage.user.LoginDtos.RegisterResponseDto; // Removido import de RegisterResponseDto
 import com.example.pdf_extratct.loginpage.user.RegisterDtoRequest.UserRegisterRequestDto;
 import com.example.pdf_extratct.loginpage.user.strategy.UserCreationStrategyFactory;
 import com.example.pdf_extratct.loginpage.user.UserEntity;
@@ -42,9 +43,9 @@ public class AuthService {
 
 
     @Transactional
-    public LoginResponseDto register(UserRegisterRequestDto request){
+    public LoginResponseDto register(UserRegisterRequestDto request){ // Alterado tipo de retorno para LoginResponseDto
 
-        if (userRepository.existsByEmail(request.email())){
+        if (userRepository.existsByEmail(request.getEmail())){
             throw new RuntimeException("Email já cadastrado");
         }
 
@@ -59,10 +60,10 @@ public class AuthService {
         var authAccount = strategy.createAuthAccount(user, request, passwordEncoder);
         authAccountRepository.save(authAccount);
 
-        // Gerar token JWT
+        // Gerar token JWT (mantido, pois agora será retornado)
         String token = jwtUtil.generateToken(user.getUserId(), user.getEmail());
 
-        return new LoginResponseDto(
+        return new LoginResponseDto( // Retorna LoginResponseDto com o token
                 token,
                 user.getUserId(),
                 user.getEmail(),

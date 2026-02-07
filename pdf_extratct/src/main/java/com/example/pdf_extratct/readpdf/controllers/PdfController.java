@@ -23,8 +23,17 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 
+// Importações do Swagger/OpenAPI
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 
 @RestController
+@Tag(name = "Processamento de PDF", description = "APIs para upload, processamento e extração de dados de PDFs.") // Anotação da classe
 public class PdfController {
 
     private static final Logger log = LoggerFactory.getLogger(PdfController.class);
@@ -58,12 +67,24 @@ public class PdfController {
     }
 
     @PostMapping("/api/pdf-to-excel")
+    @Operation(summary = "Processa PDF e gera Excel",
+               description = "Recebe um PDF, extrai texto, processa com IA e retorna um arquivo Excel com os dados extraídos.")
+    @ApiResponse(responseCode = "200", description = "Excel gerado com sucesso",
+                 content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                                    schema = @Schema(type = "string", format = "binary"))) // Resposta de sucesso
+    @ApiResponse(responseCode = "400", description = "Requisição inválida ou erro no processamento",
+                 content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE,
+                                    schema = @Schema(implementation = String.class))) // Resposta de erro
+    @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content) // Exemplo para segurança
+    @ApiResponse(responseCode = "403", description = "Acesso negado", content = @Content) // Exemplo para segurança
     public ResponseEntity<?> pdfToExcel(
+            @Parameter(description = "Cabeçalhos desejados para a extração, separados por vírgula (ex: Nome,Idade,Cidade)", required = true)
             @RequestParam("headers") String headers,
+            @Parameter(description = "Nome original do arquivo PDF para referência no job", required = true)
             @RequestParam("fileName") String fileName,
+            @Parameter(description = "Tamanho do arquivo PDF em bytes", required = true)
             @RequestParam("fileSize") Long fileSize,
-            @AuthenticationPrincipal UserEntity user  // 👈 NOVO - nome do arquivo
-
+            @AuthenticationPrincipal UserEntity user // Não documentamos como um @Parameter direto para o usuário final
     ) {
         ProcessingJobEntity job = null;
         try {

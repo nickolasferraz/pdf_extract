@@ -20,7 +20,7 @@ public class GoogleUserCreationStrategy implements UserCreationStrategy {
     @Override
     public UserEntity createUser(UserRegisterRequestDto request) {
         UserEntity user = new UserEntity();
-        user.setEmail(request.email());
+        user.setEmail(request.getEmail());
         user.setEmailValidado(true); // Google já validou o email
         user.setCreditBalance(10); // Bônus para usuários OAuth
         return user;
@@ -31,7 +31,7 @@ public class GoogleUserCreationStrategy implements UserCreationStrategy {
         AuthAccountEntity authAccount = new AuthAccountEntity();
         authAccount.setUser(user);
         authAccount.setProvider(AuthProvider.GOOGLE);
-        authAccount.setProviderId(request.password()); // 👈 CORRIGIDO - OAuth ID do Google
+        authAccount.setProviderId(request.getPassword()); // 👈 CORRIGIDO - OAuth ID do Google
         return authAccount;
     }
 }

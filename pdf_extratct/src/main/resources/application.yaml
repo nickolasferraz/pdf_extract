@@ -19,13 +19,13 @@ spring:
       connection-timeout: 30000
 
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+    open-in-view: false
 
   security:
     oauth2:
@@ -60,6 +60,9 @@ spring:
               model: "gemini-2.5-flash"
               temperature: 0.1
 
+  profiles:
+    active: dev
+
 server:
   port: 8080
   tomcat:
@@ -74,3 +77,10 @@ logging:
   level:
     com.example.pdf_extratct: DEBUG
     org.springframework.ai: DEBUG
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+  # REMOVIDO: info (vai para SwaggerConfig.java)

@@ -20,7 +20,7 @@ public interface ProcessingJobRepository extends JpaRepository<ProcessingJobEnti
     );
 
 
-    // ✅ Sem paginação (ADICIONE ESTE)
+
     List<ProcessingJobEntity> findByUserOrderByCreatedAtDesc(UserEntity user);
 
     Long countByUser(UserEntity user);
@@ -30,5 +30,5 @@ public interface ProcessingJobRepository extends JpaRepository<ProcessingJobEnti
     @Query("SELECT SUM(j.creditsUsed) FROM ProcessingJobEntity j WHERE j.user = :user")
     Integer sumCreditsUsedByUser(UserEntity user);
 
-    Optional<ProcessingJobEntity>findByIdAndUser(String jobId, UserEntity user);
+    Optional<ProcessingJobEntity>findByJobIdAndUser(String jobId, UserEntity user); // CORRIGIDO: findByIdAndUser para findByJobIdAndUser
 }

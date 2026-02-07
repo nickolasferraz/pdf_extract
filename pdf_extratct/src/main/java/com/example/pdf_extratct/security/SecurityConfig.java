@@ -2,6 +2,7 @@ package com.example.pdf_extratct.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile; // Importar Profile
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -12,6 +13,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@Profile("!dev") // Esta configuração será ativada APENAS quando o perfil 'dev' NÃO estiver ativo
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -39,11 +41,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.disable()) // ⚠️ Configure CORS depois
                 .authorizeHttpRequests(auth -> auth
-                        // 🔓 ROTAS PÚBLICAS
-                        .requestMatchers("/api/auth/**").permitAll()           // Login/Registro local
-                        .requestMatchers("/login/oauth2/**").permitAll()       // Callback OAuth
-                        .requestMatchers("/oauth2/**").permitAll()             // Autorização OAuth
-                        .requestMatchers("/api/public/**").permitAll()         // Trial sem login
+                            // Swagger API Docs
 
                         // 🔐 ROTAS AUTENTICADAS
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")     // Só admin

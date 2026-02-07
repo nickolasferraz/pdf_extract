@@ -19,7 +19,7 @@ public class LocalUserCreationStrategy implements UserCreationStrategy {
     @Override
     public UserEntity createUser( UserRegisterRequestDto request) {
         UserEntity user = new UserEntity();
-        user.setEmail(request.email());
+        user.setEmail(request.getEmail());
         user.setEmailValidado(false);
         user.setCreditBalance(0);
         return user;
@@ -30,7 +30,7 @@ public class LocalUserCreationStrategy implements UserCreationStrategy {
         AuthAccountEntity authAccount = new AuthAccountEntity();
         authAccount.setUser(user);
         authAccount.setProvider(getProviderName());
-        authAccount.setPasswordHash(encoder.encode(request.password()));
+        authAccount.setPasswordHash(encoder.encode(request.getPassword()));
         return authAccount;
     }
 }

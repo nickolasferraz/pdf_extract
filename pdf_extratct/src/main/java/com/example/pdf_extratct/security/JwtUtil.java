@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.security.Key;
+import java.util.Base64; // Adicionado import para Base64
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +22,9 @@ public class JwtUtil {
     private Long expiration;
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        // Decodifica a string Base64 da chave secreta para bytes
+        byte[] decodedKey = Base64.getDecoder().decode(secret);
+        return Keys.hmacShaKeyFor(decodedKey);
     }
 
     public String generateToken(String userId, String email) {

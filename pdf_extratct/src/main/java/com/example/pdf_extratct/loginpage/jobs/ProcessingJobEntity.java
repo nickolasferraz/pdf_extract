@@ -68,6 +68,7 @@ public class ProcessingJobEntity {
         job.setFileName(fileName);
         job.setFileSizeBytes(fileSize);
         job.setCreditsEstimated(estimatedCredits);
+        job.setCreditsUsed(0);
         job.setStatus(JobStatus.PENDING);
         return job;
     }
