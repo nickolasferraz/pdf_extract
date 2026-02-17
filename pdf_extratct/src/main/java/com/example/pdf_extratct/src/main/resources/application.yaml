@@ -1,0 +1,100 @@
+spring:
+  application:
+    name: pdf_extratct
+
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:8001/postgres
+    username: postgres
+    password: aea0d89357af91b3775c7ca4d2a99704
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 870141349909-8qk4rrg4jtm2b9p6mkpmls4et9lnv4rt.apps.googleusercontent.com
+            client-secret: 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
+            scope:
+              - email
+              - profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/google"
+
+  servlet:
+    multipart:
+      max-file-size: 10GB
+      max-request-size: 10GB
+    session:
+      tracking-modes: cookie
+
+  storage:
+    location: ./uploads/
+
+  ai:
+    vertex:
+      ai:
+        gemini:
+          project-id: "iotska121"
+          location: "us-central1"
+          chat:
+            options:
+              model: "gemini-2.5-flash"
+              temperature: 0.1
+
+  profiles:
+    active: dev
+
+server:
+  port: 8080
+  tomcat:
+    max-http-form-post-size: 10GB
+    max-swallow-size: 10GB
+
+jwt:
+  secret: YsZQUtmOPQ/EY0Eba+0CLUQJOA4+mpkHqQDHnA0w6Uo=
+  expiration: 86400000
+
+logging:
+  level:
+    com.example.pdf_extratct: INFO # Alterado de DEBUG para INFO
+    org.springframework.ai: DEBUG
+    org.hibernate: WARN # Adicionado para reduzir logs do Hibernate
+    org.hibernate.SQL: DEBUG # Se quiser ver as queries SQL geradas pelo Hibernate
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Se quiser ver os parâmetros das queries SQL
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+  info:
+    title: Extração de PDF
+    description: Documentação da API para o serviço de extração de texto de PDFs.
+    version: 1.0.0
+    terms-of-service: http://swagger.io/terms/
+    contact:
+      name: Seu Nome/Empresa
+      url: http://www.seusite.com
+      email: contato@seusite.com
+    license:
+      name: Apache 2.0
+      url: http://springdoc.org
