@@ -21,4 +21,8 @@ public record JobContext(
     public static JobContext forRefund(String reason) {
         return new JobContext(null, null, null, reason);
     }
+
+    public static JobContext forCancel(String reason){
+        return new JobContext(null, null, null, reason);
+    }
 }

@@ -5,10 +5,7 @@ import com.example.pdf_extratct.loginpage.credittransaction.CreditTransactionEnt
 import com.example.pdf_extratct.loginpage.jobs.ProcessingJobEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;  // ← ADICIONE ESTE IMPORT
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;  // ← ADICIONE ESTE IMPORT
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -17,42 +14,42 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserEntity {
 
     @Id
-    @GeneratedValue(generator = "UUID")
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "user_id", updatable = false, nullable = false)
     private String userId;
 
     @Column(unique = true, nullable = false)
     private String email;
 
-    private String password; // Nullable para OAuth-only
+    private String password;
 
-    @Column(name = "email_validado")
+    @Column(name = "email_validado", nullable = false)
     private Boolean emailValidado = false;
 
-    @Column(name = "credit_balance")
-    private Integer creditBalance = 0;
+    @Column(name = "credit_balance", nullable = false)
+    private int creditBalance = 0;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @ToString.Exclude  // ← ADICIONE ISTO
-    @JsonIgnore        // ← ADICIONE ISTO
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<AuthAccountEntity> authAccountEntities;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @ToString.Exclude  // ← ADICIONE ISTO
-    @JsonIgnore        // ← ADICIONE ISTO
+    @JsonIgnore
     private List<CreditTransactionEntity> transactions;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @ToString.Exclude  // ← ADICIONE ISTO
-    @JsonIgnore        // ← ADICIONE ISTO
+    @JsonIgnore
     private List<ProcessingJobEntity> jobs;
 
     @CreationTimestamp
+    @Column(updatable = false)
     private Timestamp createdAt;
 
     @UpdateTimestamp

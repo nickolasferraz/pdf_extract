@@ -1,9 +1,11 @@
 package com.example.pdf_extratct.loginpage.jobs.Dtos;
 
 public record JobStatsResponse(
-        Long totalJobs,
-        Long completedJobs,
-        Long failedJobs,
-        Long pendingJobs,
+        Long total,
+        Long completed,
+        Long failed,
+        Long pending,
+        Long canceled, // Adicionado
+        Long refunded, // Adicionado
         Integer totalCreditsUsed
 ) {}

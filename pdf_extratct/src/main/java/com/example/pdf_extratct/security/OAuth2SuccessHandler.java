@@ -1,6 +1,10 @@
 package com.example.pdf_extratct.security;
 
+import com.example.pdf_extratct.loginpage.auth.AuthAccountEntity;
+import com.example.pdf_extratct.loginpage.auth.AuthAccountRepository;
 import com.example.pdf_extratct.loginpage.auth.AuthProvider;
+import com.example.pdf_extratct.loginpage.credittransaction.CreditService; // Importar CreditService
+import com.example.pdf_extratct.loginpage.credittransaction.TransactionType; // Importar TransactionType
 import com.example.pdf_extratct.loginpage.user.UserEntity;
 import com.example.pdf_extratct.loginpage.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -19,9 +24,12 @@ import java.util.Optional;
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
+    private final AuthAccountRepository authAccountRepository;
     private final JwtUtil jwtUtil;
+    private final CreditService creditService; // Injetar CreditService
 
     @Override
+    @Transactional
     public void onAuthenticationSuccess(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -47,15 +55,30 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             user.setEmailValidado(true); // Google já validou
             user.setCreditBalance(10);   // Bônus OAuth
             user = userRepository.save(user);
+
+            // ✅ CRIAR AuthAccountEntity para vincular com Google
+            AuthAccountEntity authAccount = new AuthAccountEntity();
+            authAccount.setUser(user);
+            authAccount.setProvider(AuthProvider.GOOGLE);
+            authAccount.setProviderId(googleId);
+            authAccountRepository.save(authAccount);
+
+            // ✅ REGISTRAR TRANSAÇÃO DE BÔNUS
+            creditService.addCredits(
+                    user,
+                    10, // Valor do bônus
+                    TransactionType.BONUS,
+                    "Bônus de registro via Google OAuth"
+            );
         }
 
         // Gerar token JWT
         String token = jwtUtil.generateToken(user.getUserId(), user.getEmail());
 
-        // Redirecionar para frontend com token
+        // ✅ CORRIGIDO: Redirecionar para porta 4200 (Angular)
         String redirectUrl = String.format(
-                "http://localhost:3000/auth/callback?token=%s&userId=%s&email=%s&credits=%d",
-                token, user.getUserId(), user.getEmail(), user.getCreditBalance()
+                "http://localhost:4200?token=%s",
+                token
         );
 
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);

@@ -38,6 +38,7 @@ public class AIService {
 
         if (headers == null || fullText == null) {
             log.error("headers or fullText is null");
+            throw new RuntimeException("Cabeçalhos ou texto completo não podem ser nulos para extração.");
         }
 
         if (fullText.trim().length() < 200) {
@@ -47,6 +48,11 @@ public class AIService {
 
         ChatResponse response = chatModel.call(promptLLM(headers, fullText));
         String excelJson = response.getResult().getOutput().getText();
+
+        if (excelJson == null || excelJson.trim().isEmpty()) {
+            log.error("Resposta da IA vazia ou nula para extração de Excel.");
+            throw new RuntimeException("A IA não retornou dados para a extração de Excel. Verifique a conexão ou o prompt.");
+        }
 
         return excelJson;
     }
@@ -93,7 +99,13 @@ public class AIService {
 
         Prompt prompt = new Prompt(List.of(systemMessage, userMessage));
         ChatResponse response = chatModel.call(prompt);
+        String ocrText = response.getResult().getOutput().getText();
 
-        return response.getResult().getOutput().getText();
+        if (ocrText == null || ocrText.trim().isEmpty()) {
+            log.error("Resposta da IA vazia ou nula para OCR.");
+            throw new RuntimeException("A IA não retornou texto do OCR. Verifique a conexão ou os arquivos PDF.");
+        }
+
+        return ocrText;
     }
 }

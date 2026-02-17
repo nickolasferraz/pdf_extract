@@ -22,10 +22,11 @@ public class PdfTextAggregationService {
 
         Map<String,List<Document>> groupedByPdf = extractTextAndGroup();
 
-
         return buildFulltext(groupedByPdf);
 
     }
+
+
 
     private Map<String,List<Document>> extractTextAndGroup(){
         return extractTextService.extracttext()
@@ -34,6 +35,10 @@ public class PdfTextAggregationService {
                                 .getOrDefault("METADATA_FILE_NAME", "sem_nome.pdf")
                                 .toString()
                 ));
+    }
+
+    public int countTotalPages() {
+        return (int) extractTextService.extracttext().count();
     }
 
     private String buildFulltext(Map<String,List<Document>> groupedByPdf){

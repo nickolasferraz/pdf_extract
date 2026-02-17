@@ -39,6 +39,8 @@ public class JobService {
         Long completed = jobRepository.countByUserAndStatus(user, JobStatus.COMPLETED);
         Long failed = jobRepository.countByUserAndStatus(user, JobStatus.FAILED);
         Long pending = jobRepository.countByUserAndStatus(user, JobStatus.PENDING);
+        Long canceled=jobRepository.countByUserAndStatus(user,JobStatus.CANCELED);
+        Long refunded=jobRepository.countByUserAndStatus(user,JobStatus.REFUNDED);
         Integer totalCredits = jobRepository.sumCreditsUsedByUser(user);
 
         return new JobStatsResponse(
@@ -46,6 +48,8 @@ public class JobService {
                 completed,
                 failed,
                 pending,
+                canceled,
+                refunded,
                 totalCredits != null ? totalCredits : 0
         );
     }

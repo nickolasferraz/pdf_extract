@@ -6,11 +6,14 @@ import com.example.pdf_extratct.loginpage.credittransaction.Dtos.TransactionResp
 import com.example.pdf_extratct.loginpage.credittransaction.strategy.CreditTransactionStrategy;
 import com.example.pdf_extratct.loginpage.user.UserEntity;
 import com.example.pdf_extratct.loginpage.user.UserRepository;
+import com.example.pdf_extratct.logging.ApiLogContext; // Importar ApiLogContext
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,9 @@ public class CreditService {
     private final CreditTransactionRepository transactionRepository;
     private final UserRepository userRepository;
 
+    // ===============================
+    // 🔒 MÉTODO BASE SEGURO
+    // ===============================
     @Transactional
     public CreditTransactionEntity executeTransaction(
             CreditTransactionStrategy strategy,
@@ -27,23 +33,26 @@ public class CreditService {
             String description,
             String relatedId
     ) {
-        // Validar saldo
-        if (!strategy.validateBalance(user, amount)) {
+
+        UserEntity lockedUser = userRepository.findById(user.getUserId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        if (!strategy.validateBalance(lockedUser, amount)) {
             throw new RuntimeException("Saldo insuficiente");
         }
 
-        // Criar dados da transação usando strategy
-        CreditTransactionData transactionData = strategy.createTransaction(user, amount, description, relatedId);
+        CreditTransactionData transactionData =
+                strategy.createTransaction(lockedUser, amount, description, relatedId);
 
-        // Atualizar saldo do usuário
-        user.setCreditBalance(transactionData.balanceAfter());
-        userRepository.save(user);
+        lockedUser.setCreditBalance(transactionData.balanceAfter());
+        userRepository.save(lockedUser);
 
-        // Salvar transação
         return transactionRepository.save(transactionData.toEntity());
     }
 
-    // Métodos helper para facilitar o uso
+    // ===============================
+    // ➕ ADICIONAR CRÉDITOS
+    // ===============================
     @Transactional
     public CreditTransactionEntity addCredits(
             UserEntity user,
@@ -51,12 +60,22 @@ public class CreditService {
             TransactionType type,
             String description
     ) {
-        CreditTransactionData data = CreditTransactionData.forCredit(user, amount, type, description);
-        user.setCreditBalance(data.balanceAfter());
-        userRepository.save(user);
+
+        UserEntity lockedUser = userRepository.findById(user.getUserId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        CreditTransactionData data =
+                CreditTransactionData.forCredit(lockedUser, amount, type, description);
+
+        lockedUser.setCreditBalance(data.balanceAfter());
+        userRepository.save(lockedUser);
+
         return transactionRepository.save(data.toEntity());
     }
 
+    // ===============================
+    // ➖ DEBITAR CRÉDITOS
+    // ===============================
     @Transactional
     public CreditTransactionEntity debitCredits(
             UserEntity user,
@@ -64,38 +83,64 @@ public class CreditService {
             String jobId,
             String description
     ) {
-        if (user.getCreditBalance() < amount) {
+
+        UserEntity lockedUser = userRepository.findById(user.getUserId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        if (lockedUser.getCreditBalance() < amount) {
             throw new RuntimeException("Saldo insuficiente");
         }
 
-        CreditTransactionData data = CreditTransactionData.forDebit(user, amount, jobId, description);
-        user.setCreditBalance(data.balanceAfter());
-        userRepository.save(user);
+        CreditTransactionData data =
+                CreditTransactionData.forDebit(lockedUser, amount, jobId, description);
+
+        lockedUser.setCreditBalance(data.balanceAfter());
+        userRepository.save(lockedUser);
+
+        ApiLogContext.setCreditsDeducted(amount);
+
         return transactionRepository.save(data.toEntity());
     }
 
+    // ===============================
+    // 💰 ADD VIA REQUEST
+    // ===============================
     @Transactional
-    public CreditBalanceResponse addCredits(UserEntity user, AddCreditsRequest request) {
+    public CreditBalanceResponse addCredits(
+            UserEntity user,
+            AddCreditsRequest request
+    ) {
+
+        UserEntity lockedUser = userRepository.findById(user.getUserId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
         CreditTransactionData data = CreditTransactionData.forCredit(
-                user,
+                lockedUser,
                 request.amount(),
                 request.type(),
                 request.description()
         );
 
-        user.setCreditBalance(data.balanceAfter());
-        userRepository.save(user);
+        lockedUser.setCreditBalance(data.balanceAfter());
+        userRepository.save(lockedUser);
         transactionRepository.save(data.toEntity());
 
         return new CreditBalanceResponse(
-                user.getUserId(),
+                lockedUser.getUserId(),
                 data.balanceAfter(),
-                user.getEmail()
+                lockedUser.getEmail()
         );
     }
 
+    // ===============================
+    // 📊 CONSULTAR SALDO
+    // ===============================
     public CreditBalanceResponse getBalance(UserEntity user) {
-        Integer balance = user.getCreditBalance() != null ? user.getCreditBalance() : 0;
+
+        Integer balance = user.getCreditBalance() != 0
+                ? user.getCreditBalance()
+                : 0;
+
         return new CreditBalanceResponse(
                 user.getUserId(),
                 balance,
@@ -103,20 +148,28 @@ public class CreditService {
         );
     }
 
-    // ✅ ADICIONAR ESTE MÉTODO
-    public Page<TransactionResponse> getTransactionHistory(UserEntity user, Pageable pageable) {
-        Page<CreditTransactionEntity> transactions = transactionRepository
-                .findByUserOrderByCreatedAtDesc(user, pageable);
+    // ===============================
+    // 📜 HISTÓRICO
+    // ===============================
+    public Page<TransactionResponse> getTransactionHistory(
+            UserEntity user,
+            Pageable pageable
+    ) {
 
-        return transactions.map(transaction -> new TransactionResponse(
-                transaction.getTransactionId(),
-                transaction.getType(),
-                transaction.getAmount(),
-                transaction.getBalanceBefore(),
-                transaction.getBalanceAfter(),
-                transaction.getDescription(),
-                transaction.getRelatedJobId(),
-                transaction.getCreatedAt()
-        ));
+        Page<CreditTransactionEntity> transactions =
+                transactionRepository.findByUserOrderByCreatedAtDesc(user, pageable);
+
+        return transactions.map(transaction ->
+                new TransactionResponse(
+                        transaction.getTransactionId(),
+                        transaction.getType(),
+                        transaction.getAmount(),
+                        transaction.getBalanceBefore(),
+                        transaction.getBalanceAfter(),
+                        transaction.getDescription(),
+                        transaction.getRelatedJobId(),
+                        transaction.getCreatedAt()
+                )
+        );
     }
 }

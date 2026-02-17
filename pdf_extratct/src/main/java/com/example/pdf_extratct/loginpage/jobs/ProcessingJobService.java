@@ -4,6 +4,7 @@ import com.example.pdf_extratct.loginpage.credittransaction.CreditService;
 import com.example.pdf_extratct.loginpage.credittransaction.TransactionType;
 import com.example.pdf_extratct.loginpage.jobs.strategy.JobStatusStrategy;
 import com.example.pdf_extratct.loginpage.user.UserEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ProcessingJobService {
 
@@ -32,6 +34,10 @@ public class ProcessingJobService {
                 ));
     }
 
+    private boolean hasSufficientCredits(UserEntity user, Integer required) {
+        return user.getCreditBalance() >= required;
+    }
+
     @Transactional
     public ProcessingJobEntity createJob(
             UserEntity user,
@@ -39,11 +45,21 @@ public class ProcessingJobService {
             Long fileSize,
             Integer estimatedCredits
     ) {
-        validateCredits(user, estimatedCredits);
-        return jobRepository.save(
-                ProcessingJobEntity.createPending(user, fileName, fileSize, estimatedCredits)
-        );
+        ProcessingJobEntity job = ProcessingJobEntity
+                .createPending(user, fileName, fileSize, estimatedCredits);
+
+        if (!hasSufficientCredits(user, estimatedCredits)) {
+            return executeStrategy(
+                    job.getJobId(),
+                    JobStatus.CANCELED,
+                    JobContext.forCancel("Créditos insuficientes para processamento"));
+        }
+
+
+        return jobRepository.save(job);
     }
+
+
 
     @Transactional
     public ProcessingJobEntity startProcessing(String jobId) {
@@ -76,16 +92,6 @@ public class ProcessingJobService {
         return job;
     }
 
-    @Transactional
-    public ProcessingJobEntity cancelJob(String jobId) {
-        ProcessingJobEntity job = getJobById(jobId);
-        if (job.getStatus() != JobStatus.PENDING) {
-            throw new RuntimeException("Só pode cancelar jobs PENDING");
-        }
-        job.setStatus(JobStatus.CANCELED);
-        return jobRepository.save(job);
-    }
-
     // Consultas
     public ProcessingJobEntity getJobById(String jobId) {
         return jobRepository.findById(jobId)
@@ -111,13 +117,14 @@ public class ProcessingJobService {
         return jobRepository.save(job);
     }
 
-    private void validateCredits(UserEntity user, Integer required) {
+    private Boolean validateCredits(UserEntity user, Integer required) {
         if (user.getCreditBalance() < required) {
             throw new RuntimeException(
                     "Créditos insuficientes. Você tem: " + user.getCreditBalance() +
                             ", necessário: " + required
             );
         }
+        return true;
     }
 
     private void validateRefund(ProcessingJobEntity job) {

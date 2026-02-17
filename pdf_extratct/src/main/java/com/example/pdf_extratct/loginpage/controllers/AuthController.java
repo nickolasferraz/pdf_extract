@@ -8,6 +8,7 @@ import com.example.pdf_extratct.loginpage.user.RegisterDtoRequest.UserRegisterRe
 import com.example.pdf_extratct.loginpage.user.UserEntity;
 import com.example.pdf_extratct.security.JwtUtil;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Autenticação e Usuários", description = "APIs para registro, login, informações do usuário e gerenciamento de sessão.")

@@ -2,6 +2,15 @@ spring:
   application:
     name: pdf_extratct
 
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      username: default
+      password: Y6e93GWCcuwTapQt
+      timeout: 60000
+
   devtools:
     livereload:
       enabled: true
@@ -75,6 +84,8 @@ jwt:
 
 logging:
   level:
+    org.springframework.data.redis: DEBUG
+    io.lettuce.core: DEBUG
     com.example.pdf_extratct: DEBUG
     org.springframework.ai: DEBUG
 
