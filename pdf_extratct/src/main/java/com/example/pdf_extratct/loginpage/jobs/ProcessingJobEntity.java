@@ -2,9 +2,7 @@ package com.example.pdf_extratct.loginpage.jobs;
 
 import com.example.pdf_extratct.loginpage.user.UserEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp; // CORREÇÃO: era java.security.Timestamp
@@ -21,8 +19,20 @@ public class ProcessingJobEntity {
     @Column(name = "job_id") // Mapear explicitamente
     private String jobId;
 
+    @Getter
+    @Setter
+    private Boolean anonymous = false;
+    @Getter
+    @Setter
+    private String clientIp;
+
+    @Getter
+    @Setter
+    @Column(name = "guest_id", length = 255, nullable = true)
+    private String guestId;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private UserEntity user;
 
     @Column(name = "credits_used")

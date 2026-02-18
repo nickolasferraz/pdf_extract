@@ -24,34 +24,40 @@ public class IpGateFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String ip =extractClientIp(request);
 
-        if(ipBlockService.isBlocked(ip)){
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.setContentType("text/plain");
-            response.getWriter().write("\"Você excedeu o uso gratutito. Faça login/crie conta para continuar.\"");
+        String uri = request.getRequestURI();
+
+        if (uri.startsWith("/api/auth/") || uri.startsWith("/oauth2/") || uri.startsWith("/login/oauth2/")) {
+            filterChain.doFilter(request, response);
             return;
         }
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        boolean isAuthenticated= auth !=null && auth.isAuthenticated()
+        boolean isAuthenticated = auth != null && auth.isAuthenticated()
                 && !"anonymousUser".equals(auth.getPrincipal());
+        // Se está autenticado, passa direto (não bloqueia por IP)
+        if (isAuthenticated) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-        // Aplica apenas para rota de processamento (ajuste se houver outras rotas)
-        if (!isAuthenticated && isProtectedPath(request)) {
+        String ip = extractClientIp(request);
+        if (ipBlockService.isBlocked(ip)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("text/plain");
+            response.getWriter().write("Você excedeu o uso gratuito. Faça login/crie conta para continuar.");
+            return;
+        }
+        if (isProtectedPath(request)) {
             boolean allowed = ipBlockService.registerAnonymousUse(ip);
             if (!allowed) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("text/plain");
-                response.getWriter().write("Você excedeu o uso gratutito. Faça login/crie conta para continuar.");
+                response.getWriter().write("Você excedeu o uso gratuito. Faça login/crie conta para continuar.");
                 return;
             }
         }
-
         filterChain.doFilter(request, response);
-
-
     }
 
 

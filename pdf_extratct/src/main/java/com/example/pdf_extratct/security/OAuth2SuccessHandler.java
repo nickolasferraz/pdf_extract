@@ -28,6 +28,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final JwtUtil jwtUtil;
     private final CreditService creditService; // Injetar CreditService
 
+    private static final String FRONTEND_URL = "http://localhost:4200/"; // ajuste em produção
+    private static final String COOKIE_NAME = "JWT";
+    private static final int COOKIE_MAX_AGE = 60 * 60 * 24; // 1 dia (ajuste conforme política)
+
+
     @Override
     @Transactional
     public void onAuthenticationSuccess(
@@ -75,12 +80,24 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // Gerar token JWT
         String token = jwtUtil.generateToken(user.getUserId(), user.getEmail());
 
-        // ✅ CORRIGIDO: Redirecionar para porta 4200 (Angular)
-        String redirectUrl = String.format(
-                "http://localhost:4200?token=%s",
-                token
-        );
 
-        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
+        // Set cookie HttpOnly; em dev não colocamos Secure para localhost (em produção inclua Secure)
+        // Construímos o header manualmente para incluir SameSite.
+        String cookieHeader = String.format("%s=%s; Path=/; HttpOnly; Max-Age=%d; SameSite=Lax",
+                COOKIE_NAME, token, COOKIE_MAX_AGE);
+
+        // Em produção adicione ; Secure
+        boolean isProd = false; // se você tiver profile check, ajuste para true em prod
+        if (isProd) {
+            cookieHeader = cookieHeader + "; Secure";
+        }
+
+
+        // ✅ CORRIGIDO: Redirecionar para porta 4200 (Angular)
+        response.setHeader("Set-Cookie", cookieHeader);
+
+        // Redireciona para frontend sem token na URL
+        // Também poderia sanitizar SavedRequest aqui; para simplicidade redirecionamos para root.
+        getRedirectStrategy().sendRedirect(request, response, FRONTEND_URL);
     }
 }

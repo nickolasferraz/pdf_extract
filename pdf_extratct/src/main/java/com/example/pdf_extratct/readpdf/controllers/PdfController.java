@@ -95,7 +95,8 @@ public class PdfController {
     ) {
         ProcessingJobEntity job = null;
         String clientIp = getClientIp(request);
-
+        boolean isAnonymous = (user == null);
+        String jobId = null;
         try {
             log.info("POST /api/pdf-to-excel started");
 
@@ -103,15 +104,13 @@ public class PdfController {
                     new ExtractionHeaders(List.of(headers.split(",")));
 
 
-
             progress.step(10, "Reading PDFs");
             String fullText = pdfTextAggregationService.aggreateFullText();
             int totalPages = pdfTextAggregationService.countTotalPages();
 
-            if (fullText.isEmpty()){
+            if (fullText.isEmpty()) {
                 log.error("PDF No parsed retun null text");
             }
-
 
 
             log.info("PDF parsed successfully. Text length: {}", fullText.length());
@@ -119,13 +118,21 @@ public class PdfController {
             log.info("Estimated credits: {}", estimatedCredits);
 
 
-
-
-
             // ===== ETAPA 2: CRIAR JOB (valida créditos automaticamente) =====
             progress.step(20, "Creating job");
-            job = jobService.createJob(user, fileName, fileSize, estimatedCredits);
 
+            if (isAnonymous) {
+                // cria job anônimo e usa a mesma variável `job` para evitar confusão
+                job = jobService.createAnonymousJob(fileName, fileSize, estimatedCredits, clientIp);
+
+                if (job == null) {
+                    throw new IllegalStateException("createAnonymousJob retornou null");
+                }
+                jobId = job.getJobId();
+                log.info("Anonymous job created: {}", jobId);
+            }else {
+                job = jobService.createJob(user, fileName, fileSize, estimatedCredits);
+            }
             log.info("Job created: {}", job.getJobId());
 
             // ===== ETAPA 3: INICIAR PROCESSAMENTO =====
@@ -133,13 +140,13 @@ public class PdfController {
             jobService.startProcessing(job.getJobId());
             // 👆 Muda status do job de PENDING → PROCESSING
 
-            log.info("Job change or status for Processing",job.getJobId());
+            log.info("Job change or status for Processing", job.getJobId());
 
 
             progress.step(40, "Sending text to AI");
-            String excelJson= aiService.exctract(extractionHeaders,fullText);
+            String excelJson = aiService.exctract(extractionHeaders, fullText);
 
-            if (excelJson.isEmpty()){
+            if (excelJson.isEmpty()) {
                 log.error("AI no extract text ");
             }
 
@@ -148,7 +155,7 @@ public class PdfController {
             progress.step(70, "Parsing AI response");
             List<Map<String, String>> rows = aiparserService.parseRows(excelJson);
 
-            if (rows.isEmpty()){
+            if (rows.isEmpty()) {
                 log.error("Ai no passing for rows");
             }
 
@@ -159,8 +166,13 @@ public class PdfController {
 
             progress.step(95, "Completing job");
             int pagesProcessed = estimatedCredits;
-            // Se você tem o número real de páginas, use aqui
-            jobService.completeJob(job.getJobId(), pagesProcessed, estimatedCredits);
+
+            // CORREÇÃO: Chamar o método de conclusão apropriado APENAS UMA VEZ
+            if (isAnonymous) {
+                jobService.completeAnonymousJob(job.getJobId(), pagesProcessed, estimatedCredits);
+            } else {
+                jobService.completeJob(job.getJobId(), pagesProcessed, estimatedCredits);
+            }
             // 👆 Aqui acontece a MÁGICA:
             //    1. Atualiza job para COMPLETED
             //    2. Salva quantas páginas foram processadas
@@ -183,6 +195,14 @@ public class PdfController {
 
             if (job != null) {
                 jobService.failJob(job.getJobId(), e.getMessage());
+            }
+
+            if (isAnonymous) {
+                try {
+                    ipBlockService.refundAnonymousUse(clientIp);
+                } catch (Exception ex) {
+                    log.error("Erro ao reembolsar uso anônimo para IP {}", clientIp, ex);
+                }
             }
 
             if (user == null) {

@@ -5,10 +5,12 @@ import com.example.pdf_extratct.loginpage.credittransaction.TransactionType;
 import com.example.pdf_extratct.loginpage.jobs.strategy.JobStatusStrategy;
 import com.example.pdf_extratct.loginpage.user.UserEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -149,5 +151,59 @@ public class ProcessingJobService {
                 TransactionType.REFUND,
                 "Reembolso: " + job.getFileName() + " - " + reason
         );
+    }
+
+
+    @Transactional
+    public ProcessingJobEntity createAnonymousJob(String fileName,
+                                                  Long fileSize,
+                                                  Integer estimatedCredits,
+                                                  String clientIp) {
+        if (estimatedCredits == null) {
+            estimatedCredits = 1; // default mínimo
+        }
+        if (fileName == null) {
+            throw new IllegalArgumentException("fileName é obrigatório");
+        }
+
+        ProcessingJobEntity job = new ProcessingJobEntity();
+        job.setGuestId(GuestIdUtil.toGuestId(clientIp));
+        job.setJobId(UUID.randomUUID().toString());
+        job.setFileName(fileName);
+        job.setFileSizeBytes(fileSize);
+        job.setCreditsEstimated(estimatedCredits);
+        // definir credits_used para 0 inicialmente (ou igual a estimated se quiser)
+        job.setCreditsUsed(0);
+        job.setStatus(JobStatus.PENDING);
+        job.setAnonymous(true);
+        job.setClientIp(clientIp);
+
+            ProcessingJobEntity saved = jobRepository.save(job);
+
+            if (saved == null) {
+                throw new IllegalStateException("Repo retornou null ao salvar job");
+            }
+
+            return saved;
+
+    }
+
+
+
+
+
+
+
+
+    public void completeAnonymousJob(String jobId, int pagesProcessed, int estimatedCredits) {
+        ProcessingJobEntity job =findJob(jobId);
+        job.setStatus(JobStatus.COMPLETED);
+        job.setPagesProcessed(pagesProcessed);
+        // NÃO debitar créditos do usuário porque é anônimo
+        jobRepository.save(job);
+    }
+
+    private ProcessingJobEntity findJob(String jobId) {
+        return jobRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("Job not found: " + jobId));
     }
 }

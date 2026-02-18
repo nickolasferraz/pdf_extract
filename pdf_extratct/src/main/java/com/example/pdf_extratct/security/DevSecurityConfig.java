@@ -59,6 +59,8 @@ public class DevSecurityConfig {
                         .requestMatchers("/login/oauth2/**").permitAll()
                         .requestMatchers("/oauth2/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/api/files").permitAll()
+                        .requestMatchers("/api/pdf-to-excel").permitAll()
 
                         // 📄 Swagger liberado em DEV
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
@@ -78,7 +80,8 @@ public class DevSecurityConfig {
                         .successHandler(oAuth2SuccessHandler)
                 )
                 // ✅ JWT FILTER ativado também em DEV
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(ipGateFilter, jwtAuthenticationFilter.getClass());
         return http.build();
     }
 }
