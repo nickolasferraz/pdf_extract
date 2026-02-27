@@ -29,29 +29,48 @@ public class IpBlockService {
      * Registra um processamento anônimo e retorna true se permitido,
      * retorna false se atingiu limite e aplicou bloqueio.
      */
+    public boolean registerAnonymousUse(String ip, int fileCount) {
 
-    public boolean registerAnonymousUse(String ip){
-        String counterkey ="anon:count:" + ip;
+        String blockKey = "ip:block:" + ip;
 
-        Long count= redis.opsForValue().increment(counterkey);
-
-        if (count !=  null && count == 1L){
-            redis.expire(counterkey, Duration.ofDays(ANON_TTL_DAYS));
+        // 1️⃣ Se já estiver bloqueado, nem tenta incrementar
+        if (redis.hasKey(blockKey)) {
+            return false;
         }
 
-        if (count != null && count >ANON_LIMIT){
-            String blockKey= "ip:block:" + ip;
-            redis.opsForValue().set(blockKey,"1",Duration.ofDays(BLOCK_TLL_DAYS));
+        String counterKey = "anon:count:" + ip;
+
+        Long currentCount = redis.opsForValue().increment(counterKey, fileCount);
+
+        // 2️⃣ Se for o primeiro uso, define TTL
+        if (currentCount != null && currentCount == fileCount) {
+            redis.expire(counterKey, Duration.ofDays(ANON_TTL_DAYS));
+        }
+
+        // 3️⃣ Se ultrapassou limite
+        if (currentCount != null && currentCount > ANON_LIMIT) {
+
+            // desfaz o incremento
+            redis.opsForValue().decrement(counterKey, fileCount);
+
+            // aplica bloqueio temporário
+            redis.opsForValue().set(blockKey, "1", Duration.ofDays(BLOCK_TLL_DAYS));
+
             return false;
         }
 
         return true;
-
     }
 
-    public void refundAnonymousUse(String ip){
-        String counterKey= "anon:count"+ip;
-        Long val=redis.opsForValue().decrement(counterKey);
+
+    public boolean registerAnonymousUse(String ip) {
+        return registerAnonymousUse(ip, 1);
+    }
+
+
+    public void refundAnonymousUse(String ip, int fileCount){ // Adicionado fileCount
+        String counterKey= "anon:count:" + ip; // Corrigido para usar ":"
+        Long val=redis.opsForValue().decrement(counterKey, fileCount); // Decrementa pelo número de arquivos
 
         if (val != null && val <=0){
             redis.delete(counterKey);

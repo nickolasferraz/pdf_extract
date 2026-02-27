@@ -1,0 +1,19 @@
+package com.example.pdf_extratct.Payment.dto;
+
+import com.example.pdf_extratct.Payment.Enum.NamePackageEnum;
+import jakarta.validation.constraints.NotNull;
+
+public record CreditPackgesRequestDTO(
+        @NotNull
+        int packageId,
+        @NotNull
+        NamePackageEnum name,
+        @NotNull
+        int credits,
+        @NotNull
+        int price_cents,
+        @NotNull
+        String moeda
+
+) {
+}

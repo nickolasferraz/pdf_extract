@@ -1,8 +1,8 @@
 package com.example.pdf_extratct.logging;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ApiLogRepository extends JpaRepository<ApiLogEntity, String> {
+public interface ApiLogRepository extends MongoRepository<ApiLogDocument, String> {
 }

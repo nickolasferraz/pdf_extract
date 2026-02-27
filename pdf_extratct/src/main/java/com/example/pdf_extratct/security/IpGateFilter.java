@@ -5,6 +5,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -33,8 +34,13 @@ public class IpGateFilter extends OncePerRequestFilter {
         }
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAuthenticated = auth != null && auth.isAuthenticated()
-                && !"anonymousUser".equals(auth.getPrincipal());
+
+        boolean isAuthenticated =
+                auth != null
+                        && auth.isAuthenticated()
+                        && !(auth instanceof AnonymousAuthenticationToken);
+
+
         // Se está autenticado, passa direto (não bloqueia por IP)
         if (isAuthenticated) {
             filterChain.doFilter(request, response);

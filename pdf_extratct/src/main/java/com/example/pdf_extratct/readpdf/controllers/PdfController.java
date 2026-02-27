@@ -97,8 +97,26 @@ public class PdfController {
         String clientIp = getClientIp(request);
         boolean isAnonymous = (user == null);
         String jobId = null;
+        int fileCount = 1; // Para este endpoint, sempre processamos 1 arquivo PDF por vez
+
+        log.info("--- DEBUG AUTHENTICATION ---");
+        log.info("User is null? {}", (user == null));
+        log.info("isAnonymous: {}", isAnonymous);
+        if (user != null) {
+            log.info("Authenticated User ID: {}", user.getUserId());
+            log.info("Authenticated User Email: {}", user.getEmail());
+        }
+        log.info("----------------------------");
+
         try {
             log.info("POST /api/pdf-to-excel started");
+
+            // ===== ETAPA 1.5: VERIFICAR LIMITE ANÔNIMO (se aplicável) =====
+            if (isAnonymous) {
+                if (!ipBlockService.registerAnonymousUse(clientIp, fileCount)) {
+                    throw new RuntimeException("Limite de uso anônimo excedido para este IP.");
+                }
+            }
 
             ExtractionHeaders extractionHeaders =
                     new ExtractionHeaders(List.of(headers.split(",")));
@@ -199,14 +217,11 @@ public class PdfController {
 
             if (isAnonymous) {
                 try {
-                    ipBlockService.refundAnonymousUse(clientIp);
+                    // CORREÇÃO: Passar fileCount para refundAnonymousUse
+                    ipBlockService.refundAnonymousUse(clientIp, fileCount);
                 } catch (Exception ex) {
                     log.error("Erro ao reembolsar uso anônimo para IP {}", clientIp, ex);
                 }
-            }
-
-            if (user == null) {
-                ipBlockService.refundAnonymousUse(clientIp);
             }
 
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());

@@ -7,6 +7,7 @@ import com.example.pdf_extratct.loginpage.user.LoginDtos.LoginResponseDto;
 import com.example.pdf_extratct.loginpage.user.RegisterDtoRequest.UserRegisterRequestDto;
 import com.example.pdf_extratct.loginpage.user.UserEntity;
 import com.example.pdf_extratct.security.JwtUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -66,10 +67,22 @@ public class AuthController {
             content = @Content(schema = @Schema(implementation = LoginResponseDto.class)))
     @ApiResponse(responseCode = "400", description = "Credenciais inválidas",
             content = @Content(schema = @Schema(implementation = Map.class)))
-    public ResponseEntity<?> login(@Valid @org.springframework.web.bind.annotation.RequestBody LoginRequestDto request) {
+    public ResponseEntity<?> login(@Valid @org.springframework.web.bind.annotation.RequestBody LoginRequestDto request,
+                                   HttpServletResponse response) {
         try {
-            LoginResponseDto response = authService.login(request);
-            return ResponseEntity.ok(response);
+            LoginResponseDto loginResponse = authService.login(request);
+
+            String token = loginResponse.token();
+
+            String cookie = "JWT=" + token +
+                    "; Path=/" +
+                    "; HttpOnly" +
+                    "; Max-Age=" + (7 * 24 * 60 * 60) +
+                    "; SameSite=Lax";
+
+            response.addHeader("Set-Cookie", cookie);
+
+            return ResponseEntity.ok(loginResponse);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(
                     Map.of("error", e.getMessage())
@@ -135,10 +148,13 @@ public class AuthController {
 
     @PostMapping("/logout")
     @Operation(summary = "Logout de usuário",
-            description = "Indica que o token JWT deve ser descartado pelo cliente (stateless).")
+            description = "Limpa o cookie JWT do navegador.")
     @ApiResponse(responseCode = "200", description = "Logout realizado com sucesso",
             content = @Content(schema = @Schema(implementation = Map.class)))
-    public ResponseEntity<?> logout() {
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        // Apaga o cookie setando Max-Age=0
+        String cookieHeader = "JWT=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax";
+        response.addHeader("Set-Cookie", cookieHeader);
         return ResponseEntity.ok(
                 Map.of("message", "Logout realizado com sucesso")
         );

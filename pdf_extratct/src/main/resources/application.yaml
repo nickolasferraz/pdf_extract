@@ -2,6 +2,9 @@ spring:
   application:
     name: pdf_extratct
 
+    threads:
+      virtual:
+        enabled: true
 
   data:
     redis:
@@ -11,11 +14,14 @@ spring:
       password: Y6e93GWCcuwTapQt
       timeout: 60000
 
-  devtools:
-    livereload:
-      enabled: true
-    restart:
-      enabled: true
+    mongodb:
+      uri: mongodb://app_user:SB1hd18x5C43NupQ@195.35.19.80:27017/pdf_extract_logs?authSource=admin
+
+#  devtools:
+#    livereload:
+#      enabled: true
+#    restart:
+#      enabled: true
 
   datasource:
     url: jdbc:postgresql://localhost:8001/postgres
@@ -84,14 +90,17 @@ jwt:
 
 logging:
   level:
-    org.springframework.data.redis: DEBUG
-    io.lettuce.core: DEBUG
     com.example.pdf_extratct: DEBUG
     org.springframework.ai: DEBUG
+    org.springframework.data.mongodb: DEBUG
 
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
-  # REMOVIDO: info (vai para SwaggerConfig.java)
+
+api:
+  v1:
+    mercadopago-access-token-vendedor: TEST-5346233072327713-022100-af3ebec84e85c7d265f7b5151a6fb96b-3213929116
+    mercadopago-notification-url: https://aristocratically-inaccessible-lucien.ngrok-free.dev/api/v1/webhooks/mercadopago

@@ -61,6 +61,9 @@ public class DevSecurityConfig {
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/files").permitAll()
                         .requestMatchers("/api/pdf-to-excel").permitAll()
+                        .requestMatchers("/api/v1/payments/**").permitAll()
+                        .requestMatchers("/api/v1/webhooks/**").permitAll()
+                        .requestMatchers("/api/credit-packages","/api/credit-packages/**").permitAll()
 
                         // 📄 Swagger liberado em DEV
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
@@ -81,7 +84,7 @@ public class DevSecurityConfig {
                 )
                 // ✅ JWT FILTER ativado também em DEV
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(ipGateFilter, jwtAuthenticationFilter.getClass());
+                .addFilterAfter(ipGateFilter, jwtAuthenticationFilter.getClass());
         return http.build();
     }
 }
