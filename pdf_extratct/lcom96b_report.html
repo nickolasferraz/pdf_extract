@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Métricas OO — LCOM96b · Abstração · Instabilidade · Conascência | pdf_extract</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a1f35;
+            --bg-card-hover: #222840;
+            --border: #2a3050;
+            --text-primary: #e8ecf4;
+            --text-secondary: #8892b0;
+            --text-muted: #5a6580;
+            --accent-green: #10b981;
+            --accent-green-bg: rgba(16, 185, 129, 0.12);
+            --accent-yellow: #f59e0b;
+            --accent-yellow-bg: rgba(245, 158, 11, 0.12);
+            --accent-red: #ef4444;
+            --accent-red-bg: rgba(239, 68, 68, 0.12);
+            --accent-blue: #3b82f6;
+            --accent-blue-bg: rgba(59, 130, 246, 0.12);
+            --accent-purple: #8b5cf6;
+            --accent-gray: #6b7280;
+            --accent-gray-bg: rgba(107, 114, 128, 0.12);
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-green: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --gradient-yellow: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --gradient-red: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.5);
+            --shadow-glow-green: 0 0 20px rgba(16, 185, 129, 0.2);
+            --shadow-glow-yellow: 0 0 20px rgba(245, 158, 11, 0.2);
+            --shadow-glow-red: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+            border: 1px solid rgba(102, 126, 234, 0.15);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--gradient-1);
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        .header .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+        .header .project-name {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.4rem 1.2rem;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 999px;
+            font-size: 0.85rem;
+            color: #a78bfa;
+            font-weight: 500;
+        }
+
+        /* Formula Box */
+        .formula-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .formula-box h3 {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+        }
+        .formula {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #a78bfa;
+            font-family: 'Courier New', monospace;
+        }
+        .formula-desc {
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 8px 30px rgba(139, 92, 246, 0.1);
+        }
+        .stat-card .value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+        .stat-card .label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 0.25rem;
+        }
+        .stat-card.green .value { color: var(--accent-green); }
+        .stat-card.yellow .value { color: var(--accent-yellow); }
+        .stat-card.red .value { color: var(--accent-red); }
+        .stat-card.blue .value { color: var(--accent-blue); }
+        .stat-card.purple .value { color: var(--accent-purple); }
+        .stat-card.gray .value { color: var(--accent-gray); }
+
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        @media (max-width: 900px) {
+            .charts-section { grid-template-columns: 1fr; }
+        }
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+        .chart-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 320px;
+        }
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+        .chart-card.full-width .chart-container {
+            height: 450px;
+        }
+
+        /* Table */
+        .table-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        .table-section h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .table-controls {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-btn {
+            padding: 0.4rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        .filter-btn:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+        .filter-btn.active {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: var(--accent-purple);
+            color: #a78bfa;
+        }
+        .search-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            width: 250px;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus { border-color: var(--accent-purple); }
+        .table-wrapper { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+        }
+        th:hover { color: var(--text-secondary); }
+        td {
+            padding: 0.65rem 1rem;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(42, 48, 80, 0.5);
+            color: var(--text-secondary);
+        }
+        tr:hover td { background: rgba(139, 92, 246, 0.04); }
+        .class-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.83rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .badge-green { background: var(--accent-green-bg); color: var(--accent-green); }
+        .badge-yellow { background: var(--accent-yellow-bg); color: var(--accent-yellow); }
+        .badge-red { background: var(--accent-red-bg); color: var(--accent-red); }
+        .badge-gray { background: var(--accent-gray-bg); color: var(--accent-gray); }
+
+        /* Progress Bar */
+        .lcom-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .lcom-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+        .lcom-bar.green { background: var(--gradient-green); }
+        .lcom-bar.yellow { background: var(--gradient-yellow); }
+        .lcom-bar.red { background: var(--gradient-red); }
+
+        /* Interpretation Panel */
+        .interpretation {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+        }
+        .interpretation h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .interpretation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        .interp-item {
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid;
+        }
+        .interp-item.green { background: var(--accent-green-bg); border-color: rgba(16,185,129,0.2); }
+        .interp-item.yellow { background: var(--accent-yellow-bg); border-color: rgba(245,158,11,0.2); }
+        .interp-item.red { background: var(--accent-red-bg); border-color: rgba(239,68,68,0.2); }
+        .interp-item h4 { font-size: 0.9rem; margin-bottom: 0.4rem; }
+        .interp-item.green h4 { color: var(--accent-green); }
+        .interp-item.yellow h4 { color: var(--accent-yellow); }
+        .interp-item.red h4 { color: var(--accent-red); }
+        .interp-item p { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Section Divider */
+        .section-divider {
+            text-align: center;
+            margin: 3rem 0 2rem;
+            position: relative;
+        }
+        .section-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+        .section-divider span {
+            position: relative;
+            background: var(--bg-primary);
+            padding: 0.5rem 1.5rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Module Metrics Table */
+        .module-table-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        .module-table-section h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .module-table-section table td { font-family: 'Courier New', monospace; font-size: 0.82rem; }
+
+        /* Connascence Cards */
+        .conn-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        .conn-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .conn-card:hover { border-color: rgba(139,92,246,0.3); transform: translateY(-2px); }
+        .conn-card h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .conn-card .conn-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+        .conn-card p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .conn-card .conn-detail {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+        .conn-card .conn-detail li {
+            list-style: none;
+            padding: 0.15rem 0;
+        }
+        .conn-analysis {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+        }
+        .conn-analysis h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 1rem; }
+        .conn-analysis p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 0.75rem; }
+        .conn-analysis strong { color: var(--text-primary); }
+        .conn-analysis .highlight { color: #a78bfa; font-weight: 600; }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate { animation: fadeInUp 0.5s ease forwards; }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header animate">
+            <h1>Métricas OO Completas</h1>
+            <p class="subtitle">LCOM96b · Abstração · Instabilidade · Distância da Sequência Principal · Conascência</p>
+            <span class="project-name">📦 pdf_extract — Spring Boot Application</span>
+        </div>
+
+        <!-- Formula -->
+        <div class="formula-box animate delay-1">
+            <h3>Fórmula LCOM96b</h3>
+            <div class="formula">LCOM96b = 1 − ( Σ mA / (m × a) )</div>
+            <p class="formula-desc">
+                <strong>m</strong> = nº de métodos &nbsp;|&nbsp; <strong>a</strong> = nº de atributos de instância &nbsp;|&nbsp; 
+                <strong>mA</strong> = nº de métodos que acessam cada atributo<br>
+                <strong>0.0</strong> = Altamente coeso &nbsp;→&nbsp; <strong>1.0</strong> = Sem coesão
+            </p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid animate delay-2">
+            <div class="stat-card purple">
+                <div class="value">106</div>
+                <div class="label">Total de Classes</div>
+            </div>
+            <div class="stat-card blue">
+                <div class="value">46</div>
+                <div class="label">Classes Avaliadas</div>
+            </div>
+            <div class="stat-card green">
+                <div class="value">23</div>
+                <div class="label">Alta Coesão (≤0.3)</div>
+            </div>
+            <div class="stat-card yellow">
+                <div class="value">15</div>
+                <div class="label">Coesão Média (0.3 – 0.7)</div>
+            </div>
+            <div class="stat-card red">
+                <div class="value">8</div>
+                <div class="label">Baixa Coesão (&gt;0.7)</div>
+            </div>
+            <div class="stat-card gray">
+                <div class="value">60</div>
+                <div class="label">N/A (Interfaces/DTOs)</div>
+            </div>
+        </div>
+
+        <!-- Interpretation Panel -->
+        <div class="interpretation animate delay-2">
+            <h3>📊 Interpretação dos Resultados</h3>
+            <div class="interpretation-grid">
+                <div class="interp-item green">
+                    <h4>✅ Alta Coesão (LCOM ≤ 0.3) — 50.0%</h4>
+                    <p>Classe bem projetada! Todos ou quase todos os métodos utilizam os atributos da classe, indicando responsabilidade única e design coeso.</p>
+                </div>
+                <div class="interp-item yellow">
+                    <h4>⚠️ Coesão Média (0.3 – 0.7) — 32.6%</h4>
+                    <p>A classe pode ter responsabilidades mistas. Considere analisar se há métodos que poderiam ser extraídos para outra classe.</p>
+                </div>
+                <div class="interp-item red">
+                    <h4>🔴 Baixa Coesão (LCOM &gt; 0.7) — 17.4%</h4>
+                    <p>A classe provavelmente viola o Princípio da Responsabilidade Única (SRP). Considere refatorar dividindo em classes menores e mais focadas.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-section animate delay-3">
+            <div class="chart-card">
+                <h3>🍩 Distribuição de Coesão (% das Classes Avaliadas)</h3>
+                <div class="chart-container">
+                    <canvas id="doughnutChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>📊 Distribuição por Faixa de LCOM96b</h3>
+                <div class="chart-container">
+                    <canvas id="histogramChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card full-width">
+                <h3>📈 LCOM96b por Classe (Classes Avaliadas, ordenadas por valor)</h3>
+                <div class="chart-container">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>🧩 Composição Total do Projeto</h3>
+                <div class="chart-container">
+                    <canvas id="compositionChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>📦 LCOM96b por Módulo</h3>
+                <div class="chart-container">
+                    <canvas id="moduleChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-section animate delay-3">
+            <h3>📋 Detalhes por Classe</h3>
+            <div class="table-controls">
+                <button class="filter-btn active" data-filter="all">Todas</button>
+                <button class="filter-btn" data-filter="green">Alta Coesão</button>
+                <button class="filter-btn" data-filter="yellow">Média</button>
+                <button class="filter-btn" data-filter="red">Baixa Coesão</button>
+                <button class="filter-btn" data-filter="na">N/A</button>
+                <input type="text" class="search-input" placeholder="🔍 Buscar classe..." id="searchInput">
+            </div>
+            <div class="table-wrapper">
+                <table id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)">Classe ↕</th>
+                            <th onclick="sortTable(1)">LCOM96b ↕</th>
+                            <th onclick="sortTable(2)">Métodos ↕</th>
+                            <th onclick="sortTable(3)">Atributos ↕</th>
+                            <th>Nível</th>
+                            <th>Barra</th>
+                            <th>Módulo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ====================== SECTION 2: ABSTRACTION & INSTABILITY ====================== -->
+        <div class="section-divider"><span>📐 Abstração & Instabilidade</span></div>
+
+        <!-- Formulas -->
+        <div class="formula-box">
+            <h3>Fórmulas de Robert C. Martin</h3>
+            <div class="formula">A = Na / Nc &nbsp;&nbsp;|&nbsp;&nbsp; I = Ce / (Ca + Ce) &nbsp;&nbsp;|&nbsp;&nbsp; D = |A + I − 1|</div>
+            <p class="formula-desc">
+                <strong>A</strong> = Abstração (tipos abstratos / total) &nbsp;|&nbsp;
+                <strong>I</strong> = Instabilidade (deps saída / total deps) &nbsp;|&nbsp;
+                <strong>D</strong> = Distância da Sequência Principal<br>
+                <strong>Na</strong> = interfaces + classes abstratas &nbsp;|&nbsp;
+                <strong>Ca</strong> = acoplamento aferente &nbsp;|&nbsp;
+                <strong>Ce</strong> = acoplamento eferente
+            </p>
+        </div>
+
+        <!-- A/I Module Table -->
+        <div class="module-table-section">
+            <h3>📋 Métricas por Módulo</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Módulo</th>
+                            <th>Nc</th>
+                            <th>Na</th>
+                            <th>A (Abstração)</th>
+                            <th>Ca</th>
+                            <th>Ce</th>
+                            <th>I (Instabilidade)</th>
+                            <th>D (Distância)</th>
+                            <th>Zona</th>
+                        </tr>
+                    </thead>
+                    <tbody id="moduleMetricsBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Charts for A/I/D -->
+        <div class="charts-section">
+            <div class="chart-card full-width">
+                <h3>🎯 Gráfico A × I — Distância da Sequência Principal</h3>
+                <div class="chart-container" style="height:500px;">
+                    <canvas id="mainSequenceChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>📊 Abstração × Instabilidade por Módulo</h3>
+                <div class="chart-container">
+                    <canvas id="aiBarChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>📏 Distância da Sequência Principal (D)</h3>
+                <div class="chart-container">
+                    <canvas id="distanceBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====================== SECTION 3: CONNASCENCE ====================== -->
+        <div class="section-divider"><span>🔗 Análise de Conascência</span></div>
+
+        <!-- Connascence Stats -->
+        <div class="conn-grid">
+            <div class="conn-card">
+                <h4>📛 Conascência de Nome (CoN)</h4>
+                <div class="conn-value" style="color:#3b82f6">31</div>
+                <p>Referências entre módulos via import/injeção de dependência. Forma mais fraca e aceitável.</p>
+                <div class="conn-detail">
+                    <strong>Cross-module:</strong> 31 &nbsp;|&nbsp; <strong>Intra-module:</strong> 146<br>
+                    <strong>Top conexões:</strong>
+                    <ul>
+                        <li>security → loginpage: <strong>9</strong> refs</li>
+                        <li>Payment → loginpage: <strong>4</strong> refs</li>
+                        <li>readpdf → loginpage: <strong>3</strong> refs</li>
+                        <li>loginpage → security: <strong>2</strong> refs</li>
+                        <li>loginpage → Payment: <strong>2</strong> refs</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="conn-card">
+                <h4>🧬 Conascência de Tipo (CoT)</h4>
+                <div class="conn-value" style="color:#ef4444">156</div>
+                <p>Dependências de tipos concretos. Alto número indica acoplamento forte a implementações.</p>
+                <div class="conn-detail">
+                    <strong>Deps concretas:</strong> 156 (90.7%) &nbsp;|&nbsp; <strong>Deps abstratas:</strong> 16 (9.3%)<br>
+                    ⚠️ Proporção de abstração muito baixa: apenas 9.3% das dependências são abstratas.
+                </div>
+            </div>
+            <div class="conn-card">
+                <h4>🔤 Conascência de Significado (CoM)</h4>
+                <div class="conn-value" style="color:#f59e0b">2</div>
+                <p>Enums compartilhados entre módulos. Valor baixo indica bom encapsulamento semântico.</p>
+                <div class="conn-detail">
+                    <strong>Enums do projeto:</strong> AuthProvider, TransactionType, JobStatus, NamePackageEnum<br>
+                    Apenas 2 referências cross-module de enums.
+                </div>
+            </div>
+            <div class="conn-card">
+                <h4>📐 Conascência de Posição (CoP)</h4>
+                <div class="conn-value" style="color:#8b5cf6">11</div>
+                <p>Classes com construtores com &gt;3 parâmetros. Dependência da ordem posicional.</p>
+                <div class="conn-detail">
+                    <strong>Classes afetadas:</strong>
+                    <ul>
+                        <li>JobResponse: <strong>11</strong> params</li>
+                        <li>TransactionResponse: <strong>8</strong> params</li>
+                        <li>CreditTransactionData: <strong>7</strong> params</li>
+                        <li>JobStatsResponse: <strong>7</strong> params</li>
+                        <li>PdfController: <strong>7</strong> params</li>
+                        <li>AuthService: <strong>5</strong> params</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connascence Charts -->
+        <div class="charts-section">
+            <div class="chart-card">
+                <h3>🍩 Tipo de Conascência (distribuição)</h3>
+                <div class="chart-container">
+                    <canvas id="connDoughnut"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>🔗 Deps Concretas vs Abstratas</h3>
+                <div class="chart-container">
+                    <canvas id="connTypeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connascence Analysis Text -->
+        <div class="conn-analysis">
+            <h3>📝 Análise de Conascência do Projeto</h3>
+            <p><strong>1. Conascência de Nome (CoN) — Nível: <span class="highlight">Aceitável</span></strong><br>
+            Com 31 referências cross-module contra 146 intra-module, o projeto mantém a maioria das dependências dentro dos módulos (82.5%), o que é positivo. O módulo <strong>loginpage</strong> é o mais referenciado (hub central), com 5 módulos dependendo dele. Isso é esperado por ser o módulo de domínio principal.</p>
+
+            <p><strong>2. Conascência de Tipo (CoT) — Nível: <span style="color:#ef4444;font-weight:600">Atenção</span></strong><br>
+            Das 172 dependências totais, <strong>90.7% são a tipos concretos</strong> e apenas 9.3% a abstrações. Isso viola o Princípio da Inversão de Dependência (DIP). Recomendação: introduzir interfaces nos módulos <strong>security</strong> (A=0.0) e <strong>common</strong> (A=0.0), que não possuem nenhuma abstração.</p>
+
+            <p><strong>3. Conascência de Significado (CoM) — Nível: <span class="highlight">Bom</span></strong><br>
+            Apenas 2 referências cross-module a Enums. Os 4 enums do projeto (AuthProvider, TransactionType, JobStatus, NamePackageEnum) estão bem encapsulados nos respectivos módulos.</p>
+
+            <p><strong>4. Conascência de Posição (CoP) — Nível: <span style="color:#f59e0b;font-weight:600">Moderado</span></strong><br>
+            11 classes possuem construtores com mais de 3 parâmetros. Destaque para <strong>JobResponse</strong> (11 params) e <strong>TransactionResponse</strong> (8 params). Embora records/DTOs aceitam mais parâmetros por natureza, classes como <strong>PdfController</strong> (7 deps injetadas) e <strong>AuthService</strong> (5 deps) podem indicar responsabilidades excessivas. Considere usar o padrão Builder ou dividir as classes.</p>
+
+            <p><strong>Resumo Geral:</strong> O projeto apresenta <span class="highlight">acoplamento controlado</span> entre módulos, com a maioria das dependências concentradas intra-módulo. Os principais pontos de melhoria são: (1) aumentar a taxa de abstração (DIP) especialmente nos módulos security e common, e (2) reduzir a conascência de posição nas classes com muitos parâmetros no construtor.</p>
+        </div>
+
+        <div class="footer">
+            Métricas OO — LCOM96b · Abstração · Instabilidade · Conascência — Gerado em 06/03/2026 — pdf_extract
+        </div>
+    </div>
+
+    <script>
+        // === DATA ===
+        const data = [
+            { name: "WebConfig", lcom: 0.0, m: 1, a: 1, module: "logging" },
+            { name: "CreditController", lcom: 0.0, m: 2, a: 1, module: "loginpage" },
+            { name: "JobController", lcom: 0.0, m: 1, a: 1, module: "loginpage" },
+            { name: "UserCreationStrategyFactory", lcom: 0.0, m: 2, a: 1, module: "loginpage" },
+            { name: "CreditPackagesController", lcom: 0.0, m: 2, a: 1, module: "Payment" },
+            { name: "WebhookController", lcom: 0.0, m: 2, a: 1, module: "Payment" },
+            { name: "PaymentCreateResponsetDTO", lcom: 0.0, m: 1, a: 7, module: "Payment" },
+            { name: "CreatePaymentPreferenceService", lcom: 0.0, m: 2, a: 1, module: "Payment" },
+            { name: "CreatePixPaymentService", lcom: 0.0, m: 1, a: 1, module: "Payment" },
+            { name: "PaymentServiceImpl", lcom: 0.0, m: 2, a: 1, module: "Payment" },
+            { name: "ProcessPaymentNotificationService", lcom: 0.0, m: 2, a: 2, module: "Payment" },
+            { name: "AiResponseParserService", lcom: 0.0, m: 1, a: 1, module: "readpdf" },
+            { name: "SystemReadExtractTextService", lcom: 0.0, m: 4, a: 1, module: "readpdf" },
+            { name: "ExcelService", lcom: 0.0, m: 2, a: 1, module: "readpdf" },
+            { name: "ReadExtractProperties", lcom: 0.0, m: 2, a: 1, module: "readpdf" },
+            { name: "JwtAuthenticationFilter", lcom: 0.0, m: 2, a: 2, module: "security" },
+            { name: "StorageProperties", lcom: 0.0, m: 2, a: 1, module: "uploadfiles" },
+            { name: "AuthService", lcom: 0.0667, m: 3, a: 5, module: "loginpage" },
+            { name: "CachePackgeService", lcom: 0.1667, m: 3, a: 2, module: "Payment" },
+            { name: "JobService", lcom: 0.2, m: 5, a: 1, module: "loginpage" },
+            { name: "AddCreditStrategy", lcom: 0.25, m: 4, a: 1, module: "loginpage" },
+            { name: "IpBlockService", lcom: 0.25, m: 8, a: 1, module: "security" },
+            { name: "FileSystemStorageService", lcom: 0.25, m: 8, a: 1, module: "uploadfiles" },
+            { name: "PdfAggregationResult", lcom: 0.3333, m: 3, a: 2, module: "readpdf" },
+            { name: "DevSecurityConfig", lcom: 0.3333, m: 3, a: 5, module: "security" },
+            { name: "SecurityConfig", lcom: 0.3333, m: 3, a: 2, module: "security" },
+            { name: "AIService", lcom: 0.375, m: 4, a: 2, module: "readpdf" },
+            { name: "CreditService", lcom: 0.4762, m: 7, a: 3, module: "loginpage" },
+            { name: "UserRegisterRequestDto", lcom: 0.5, m: 6, a: 2, module: "loginpage" },
+            { name: "PdfTextAggregationService", lcom: 0.5, m: 4, a: 1, module: "readpdf" },
+            { name: "IpGateFilter", lcom: 0.5, m: 4, a: 1, module: "security" },
+            { name: "OAuth2SuccessHandler", lcom: 0.5, m: 2, a: 4, module: "security" },
+            { name: "FileUploadController", lcom: 0.5, m: 4, a: 2, module: "uploadfiles" },
+            { name: "AuthController", lcom: 0.5833, m: 6, a: 2, module: "loginpage" },
+            { name: "TesteConexao", lcom: 0.5833, m: 8, a: 3, module: "uploadfiles" },
+            { name: "ProgressLogger", lcom: 0.6667, m: 6, a: 1, module: "common" },
+            { name: "ApiLoggingInterceptor", lcom: 0.6667, m: 3, a: 1, module: "logging" },
+            { name: "CreatePaymentController", lcom: 0.6667, m: 3, a: 3, module: "Payment" },
+            { name: "MercadoPagoClient", lcom: 0.7143, m: 7, a: 2, module: "Payment" },
+            { name: "PdfController", lcom: 0.7143, m: 4, a: 7, module: "readpdf" },
+            { name: "ProcessingJobService", lcom: 0.7222, m: 18, a: 3, module: "loginpage" },
+            { name: "JwtUtil", lcom: 0.7857, m: 7, a: 2, module: "security" },
+            { name: "PaymentEntity", lcom: 0.875, m: 1, a: 8, module: "Payment" },
+            { name: "AuthAccountEntity", lcom: 0.8889, m: 1, a: 9, module: "loginpage" },
+            { name: "CreditTransactionEntity", lcom: 0.8889, m: 1, a: 9, module: "loginpage" },
+            { name: "ProcessingJobEntity", lcom: 0.9, m: 2, a: 15, module: "loginpage" },
+        ];
+
+        const naData = [
+            { name: "PdfExtratctApplication", m: 2, a: 0, reason: "Sem atributos", module: "root" },
+            { name: "ApiLogContext", m: 3, a: 0, reason: "Sem atributos", module: "logging" },
+            { name: "ApiLogDocument", m: 0, a: 8, reason: "Sem métodos", module: "logging" },
+            { name: "ApiLogRepository", m: 0, a: 0, reason: "Interface", module: "logging" },
+            { name: "AuthAccountRepository", m: 0, a: 0, reason: "Interface", module: "loginpage" },
+            { name: "AuthProvider", m: 0, a: 0, reason: "Enum", module: "loginpage" },
+            { name: "GoogleUserCreationStrategy", m: 3, a: 0, reason: "Sem atributos", module: "loginpage" },
+            { name: "LocalUserCreationStrategy", m: 3, a: 0, reason: "Sem atributos", module: "loginpage" },
+            { name: "CreditTransactionData", m: 3, a: 0, reason: "Sem atributos", module: "loginpage" },
+            { name: "CreditTransactionRepository", m: 0, a: 0, reason: "Interface", module: "loginpage" },
+            { name: "TransactionType", m: 0, a: 0, reason: "Enum", module: "loginpage" },
+            { name: "AddCreditsRequest", m: 0, a: 0, reason: "Record/DTO", module: "loginpage" },
+            { name: "CreditBalanceResponse", m: 0, a: 0, reason: "Record/DTO", module: "loginpage" },
+            { name: "TransactionResponse", m: 0, a: 0, reason: "Record/DTO", module: "loginpage" },
+            { name: "CreditTransactionStrategy", m: 0, a: 0, reason: "Interface", module: "loginpage" },
+            { name: "DebitCreditStrategy", m: 3, a: 0, reason: "Sem atributos", module: "loginpage" },
+            { name: "GuestIdUtil", m: 1, a: 0, reason: "Sem atributos", module: "loginpage" },
+            { name: "JobContext", m: 5, a: 0, reason: "Sem atributos", module: "loginpage" },
+            { name: "JobStatus", m: 0, a: 0, reason: "Enum", module: "loginpage" },
+            { name: "ProcessingJobRepository", m: 0, a: 0, reason: "Interface", module: "loginpage" },
+            { name: "JobResponse", m: 0, a: 0, reason: "Record/DTO", module: "loginpage" },
+            { name: "JobStatsResponse", m: 0, a: 0, reason: "Record/DTO", module: "loginpage" },
+            { name: "CancelJobStrategy", m: 2, a: 0, reason: "Sem atributos", module: "loginpage" },
+            { name: "CompleteJobStrategy", m: 2, a: 0, reason: "Sem atributos", module: "loginpage" },
+            { name: "FailJobStrategy", m: 2, a: 0, reason: "Sem atributos", module: "loginpage" },
+            { name: "JobStatusStrategy", m: 0, a: 0, reason: "Interface", module: "loginpage" },
+            { name: "StartProcessingStrategy", m: 2, a: 0, reason: "Sem atributos", module: "loginpage" },
+            { name: "UserEntity", m: 0, a: 10, reason: "Sem métodos", module: "loginpage" },
+            { name: "UserRepository", m: 0, a: 0, reason: "Interface", module: "loginpage" },
+            { name: "LoginRequestDto", m: 0, a: 0, reason: "Record/DTO", module: "loginpage" },
+            { name: "LoginResponseDto", m: 0, a: 0, reason: "Record/DTO", module: "loginpage" },
+            { name: "UserCreationStrategy", m: 0, a: 0, reason: "Interface", module: "loginpage" },
+            { name: "CreditPackgesRepository", m: 0, a: 0, reason: "Interface", module: "Payment" },
+            { name: "MPRequestOptionsFactory", m: 1, a: 0, reason: "Sem atributos", module: "Payment" },
+            { name: "CardPaymentDTO", m: 0, a: 8, reason: "Sem métodos", module: "Payment" },
+            { name: "CreatePreferenceResponseDTO", m: 0, a: 0, reason: "Record/DTO", module: "Payment" },
+            { name: "CreateReferenceRequestDto", m: 2, a: 0, reason: "Sem atributos", module: "Payment" },
+            { name: "CreditPackgesRequestDTO", m: 0, a: 0, reason: "Record/DTO", module: "Payment" },
+            { name: "IdentificationDTO", m: 0, a: 2, reason: "Sem métodos", module: "Payment" },
+            { name: "MercadoPagoConfigDTO", m: 0, a: 8, reason: "Sem métodos", module: "Payment" },
+            { name: "PayerDTO", m: 0, a: 3, reason: "Sem métodos", module: "Payment" },
+            { name: "PixPaymentRequestDTO", m: 1, a: 0, reason: "Sem atributos", module: "Payment" },
+            { name: "PixPaymentResponseDTO", m: 0, a: 0, reason: "Record/DTO", module: "Payment" },
+            { name: "ProcessNotificationResponseDTO", m: 0, a: 0, reason: "Record/DTO", module: "Payment" },
+            { name: "NamePackageEnum", m: 0, a: 0, reason: "Enum", module: "Payment" },
+            { name: "CreditPackagesEntity", m: 0, a: 5, reason: "Sem métodos", module: "Payment" },
+            { name: "Payer", m: 0, a: 3, reason: "Sem métodos", module: "Payment" },
+            { name: "PaymentService", m: 0, a: 0, reason: "Interface", module: "Payment" },
+            { name: "SystemExcelService", m: 1, a: 0, reason: "Sem atributos", module: "readpdf" },
+            { name: "GenerateExcelExeception", m: 2, a: 0, reason: "Sem atributos", module: "readpdf" },
+            { name: "ServiceReadExtractText", m: 0, a: 0, reason: "Interface", module: "readpdf" },
+            { name: "ExtractionHeaders", m: 0, a: 0, reason: "Enum", module: "readpdf" },
+            { name: "AjaxAuthenticationEntryPoint", m: 1, a: 0, reason: "Sem atributos", module: "security" },
+            { name: "CorsConfig", m: 1, a: 0, reason: "Sem atributos", module: "security" },
+            { name: "MongoTestConfig", m: 1, a: 0, reason: "Sem atributos", module: "security" },
+            { name: "SwaggerConfig", m: 1, a: 0, reason: "Sem atributos", module: "security" },
+            { name: "RedisConfig", m: 2, a: 0, reason: "Sem atributos", module: "security" },
+            { name: "StorageException", m: 2, a: 0, reason: "Sem atributos", module: "uploadfiles" },
+            { name: "StorageFileNotFoundException", m: 2, a: 0, reason: "Sem atributos", module: "uploadfiles" },
+            { name: "StorageService", m: 0, a: 0, reason: "Interface", module: "uploadfiles" },
+        ];
+
+        // === HELPERS ===
+        function getCategory(lcom) {
+            if (lcom === null || lcom === undefined) return 'na';
+            if (lcom <= 0.3) return 'green';
+            if (lcom <= 0.7) return 'yellow';
+            return 'red';
+        }
+        function getCategoryLabel(cat) {
+            const labels = { green: 'Alta Coesão', yellow: 'Coesão Média', red: 'Baixa Coesão', na: 'N/A' };
+            return labels[cat] || cat;
+        }
+
+        // === CHARTS ===
+        const chartColors = {
+            green: '#10b981',
+            yellow: '#f59e0b',
+            red: '#ef4444',
+            gray: '#6b7280',
+            blue: '#3b82f6',
+            purple: '#8b5cf6'
+        };
+
+        // 1. Doughnut chart
+        new Chart(document.getElementById('doughnutChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Alta Coesão (≤0.3)', 'Coesão Média (0.3–0.7)', 'Baixa Coesão (>0.7)'],
+                datasets: [{
+                    data: [23, 15, 8],
+                    backgroundColor: [chartColors.green, chartColors.yellow, chartColors.red],
+                    borderColor: 'transparent',
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#8892b0',
+                            padding: 16,
+                            usePointStyle: true,
+                            pointStyleWidth: 10,
+                            font: { size: 11, family: 'Inter' }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                const pct = ((ctx.raw / total) * 100).toFixed(1);
+                                return `${ctx.label}: ${ctx.raw} classes (${pct}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 2. Histogram
+        const ranges = ['0.0', '0.0–0.1', '0.1–0.2', '0.2–0.3', '0.3–0.4', '0.4–0.5', '0.5–0.6', '0.6–0.7', '0.7–0.8', '0.8–0.9', '0.9–1.0'];
+        const histCounts = [17, 1, 1, 3, 2, 5, 2, 3, 3, 4, 1];
+        const histColors = histCounts.map((_, i) => {
+            if (i <= 3) return chartColors.green;
+            if (i <= 7) return chartColors.yellow;
+            return chartColors.red;
+        });
+
+        new Chart(document.getElementById('histogramChart'), {
+            type: 'bar',
+            data: {
+                labels: ranges,
+                datasets: [{
+                    label: 'Nº de Classes',
+                    data: histCounts,
+                    backgroundColor: histColors,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    maxBarThickness: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `${ctx.raw} classe(s)`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#5a6580', font: { size: 10, family: 'Inter' } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(42, 48, 80, 0.3)' },
+                        ticks: { color: '#5a6580', stepSize: 2, font: { family: 'Inter' } }
+                    }
+                }
+            }
+        });
+
+        // 3. Bar chart (all classes sorted)
+        new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.name),
+                datasets: [{
+                    label: 'LCOM96b',
+                    data: data.map(d => d.lcom),
+                    backgroundColor: data.map(d => {
+                        const cat = getCategory(d.lcom);
+                        return chartColors[cat] || chartColors.gray;
+                    }),
+                    borderRadius: 4,
+                    borderSkipped: false,
+                    maxBarThickness: 22
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'x',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `LCOM96b: ${ctx.raw.toFixed(4)} | m=${data[ctx.dataIndex].m} a=${data[ctx.dataIndex].a}`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            color: '#5a6580',
+                            font: { size: 8, family: 'Inter' },
+                            maxRotation: 90,
+                            minRotation: 45
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 1,
+                        grid: { color: 'rgba(42, 48, 80, 0.3)' },
+                        ticks: { color: '#5a6580', font: { family: 'Inter' } }
+                    }
+                }
+            }
+        });
+
+        // 4. Composition chart (full project breakdown)
+        new Chart(document.getElementById('compositionChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Classes Avaliadas', 'Interfaces', 'Enums', 'Records/DTOs', 'Outros (sem m ou a)'],
+                datasets: [{
+                    data: [46, 11, 4, 12, 33],
+                    backgroundColor: [chartColors.blue, chartColors.purple, '#f472b6', '#06b6d4', chartColors.gray],
+                    borderColor: 'transparent',
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#8892b0',
+                            padding: 14,
+                            usePointStyle: true,
+                            pointStyleWidth: 10,
+                            font: { size: 10, family: 'Inter' }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const pct = ((ctx.raw / 106) * 100).toFixed(1);
+                                return `${ctx.label}: ${ctx.raw} (${pct}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 5. Module average LCOM chart
+        const modules = {};
+        data.forEach(d => {
+            if (!modules[d.module]) modules[d.module] = [];
+            modules[d.module].push(d.lcom);
+        });
+        const moduleLabels = Object.keys(modules).sort();
+        const moduleAvgs = moduleLabels.map(m => {
+            const vals = modules[m];
+            return vals.reduce((a, b) => a + b, 0) / vals.length;
+        });
+        const moduleCounts = moduleLabels.map(m => modules[m].length);
+
+        new Chart(document.getElementById('moduleChart'), {
+            type: 'bar',
+            data: {
+                labels: moduleLabels,
+                datasets: [{
+                    label: 'LCOM96b Médio',
+                    data: moduleAvgs,
+                    backgroundColor: moduleAvgs.map(v => {
+                        if (v <= 0.3) return chartColors.green;
+                        if (v <= 0.7) return chartColors.yellow;
+                        return chartColors.red;
+                    }),
+                    borderRadius: 8,
+                    borderSkipped: false,
+                    maxBarThickness: 50
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `Média: ${ctx.raw.toFixed(4)} (${moduleCounts[ctx.dataIndex]} classes)`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 1,
+                        grid: { color: 'rgba(42, 48, 80, 0.3)' },
+                        ticks: { color: '#5a6580', font: { family: 'Inter' } }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: '#8892b0', font: { size: 12, family: 'Inter', weight: 500 } }
+                    }
+                }
+            }
+        });
+
+        // === TABLE ===
+        let currentFilter = 'all';
+        let sortCol = 1;
+        let sortDir = 1; // 1 = asc, -1 = desc
+
+        function renderTable() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const tbody = document.getElementById('tableBody');
+            
+            // Combine data
+            let allItems = data.map(d => ({...d, type: 'valid'}));
+            allItems = allItems.concat(naData.map(d => ({...d, lcom: null, type: 'na'})));
+
+            // Filter
+            allItems = allItems.filter(item => {
+                if (search && !item.name.toLowerCase().includes(search)) return false;
+                if (currentFilter === 'all') return true;
+                if (currentFilter === 'na') return item.type === 'na';
+                return item.type === 'valid' && getCategory(item.lcom) === currentFilter;
+            });
+
+            // Sort
+            allItems.sort((a, b) => {
+                let va, vb;
+                switch(sortCol) {
+                    case 0: va = a.name.toLowerCase(); vb = b.name.toLowerCase(); return va < vb ? -sortDir : va > vb ? sortDir : 0;
+                    case 1: va = a.lcom ?? 999; vb = b.lcom ?? 999; return (va - vb) * sortDir;
+                    case 2: va = a.m || 0; vb = b.m || 0; return (va - vb) * sortDir;
+                    case 3: va = a.a || 0; vb = b.a || 0; return (va - vb) * sortDir;
+                    default: return 0;
+                }
+            });
+
+            tbody.innerHTML = allItems.map(item => {
+                const cat = item.type === 'na' ? 'na' : getCategory(item.lcom);
+                const badgeClass = cat === 'na' ? 'badge-gray' : cat === 'green' ? 'badge-green' : cat === 'yellow' ? 'badge-yellow' : 'badge-red';
+                const lcomText = item.lcom !== null && item.lcom !== undefined ? item.lcom.toFixed(4) : (item.reason || 'N/A');
+                const barWidth = item.lcom !== null ? (item.lcom * 100) : 0;
+                const barColor = cat === 'green' ? 'green' : cat === 'yellow' ? 'yellow' : 'red';
+                
+                return `<tr>
+                    <td class="class-name">${item.name}</td>
+                    <td>${lcomText}</td>
+                    <td>${item.m || 0}</td>
+                    <td>${item.a || 0}</td>
+                    <td><span class="badge ${badgeClass}">${getCategoryLabel(cat)}</span></td>
+                    <td>
+                        ${item.lcom !== null ? `<div class="lcom-bar-container"><div class="lcom-bar ${barColor}" style="width: ${barWidth}%"></div></div>` : '—'}
+                    </td>
+                    <td style="color: var(--text-muted); font-size: 0.78rem;">${item.module}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function sortTable(col) {
+            if (sortCol === col) sortDir *= -1;
+            else { sortCol = col; sortDir = 1; }
+            renderTable();
+        }
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderTable();
+            });
+        });
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', renderTable);
+
+        // Initial render
+        renderTable();
+
+        // =====================================================
+        // SECTION 2: ABSTRACTION, INSTABILITY, DISTANCE
+        // =====================================================
+        const moduleData = [
+            { name: 'common',      nc: 1,  na: 0, a: 0.0000, ca: 1, ce: 0, i: 0.0000, d: 1.0000 },
+            { name: 'logging',     nc: 5,  na: 1, a: 0.2000, ca: 1, ce: 1, i: 0.5000, d: 0.3000 },
+            { name: 'loginpage',   nc: 41, na: 7, a: 0.1707, ca: 5, ce: 3, i: 0.3750, d: 0.4543 },
+            { name: 'Payment',     nc: 27, na: 2, a: 0.0741, ca: 2, ce: 1, i: 0.3333, d: 0.5926 },
+            { name: 'readpdf',     nc: 12, na: 1, a: 0.0833, ca: 1, ce: 4, i: 0.8000, d: 0.1167 },
+            { name: 'root',        nc: 1,  na: 0, a: 0.0000, ca: 0, ce: 2, i: 1.0000, d: 0.0000 },
+            { name: 'security',    nc: 12, na: 0, a: 0.0000, ca: 2, ce: 2, i: 0.5000, d: 0.5000 },
+            { name: 'uploadfiles', nc: 7,  na: 1, a: 0.1429, ca: 2, ce: 1, i: 0.3333, d: 0.5238 },
+        ];
+
+        const modColors = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#06b6d4','#6b7280','#ef4444','#f472b6'];
+
+        // Populate module metrics table
+        const mmBody = document.getElementById('moduleMetricsBody');
+        mmBody.innerHTML = moduleData.map(m => {
+            const zoneColor = m.d <= 0.2 ? 'green' : m.d <= 0.5 ? 'yellow' : 'red';
+            const zoneLabel = m.d <= 0.2 ? 'Ideal' : m.d <= 0.5 ? 'Aceitável' : 'Distante';
+            const badgeCls = zoneColor === 'green' ? 'badge-green' : zoneColor === 'yellow' ? 'badge-yellow' : 'badge-red';
+            return `<tr>
+                <td style="font-weight:600;color:var(--text-primary)">${m.name}</td>
+                <td>${m.nc}</td><td>${m.na}</td>
+                <td>${m.a.toFixed(4)}</td>
+                <td>${m.ca}</td><td>${m.ce}</td>
+                <td>${m.i.toFixed(4)}</td>
+                <td>${m.d.toFixed(4)}</td>
+                <td><span class="badge ${badgeCls}">${zoneLabel}</span></td>
+            </tr>`;
+        }).join('');
+
+        // Main Sequence Scatter Chart (A x I)
+        new Chart(document.getElementById('mainSequenceChart'), {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+                        label: 'Sequência Principal (A+I=1)',
+                        data: [{x:0,y:1},{x:1,y:0}],
+                        type: 'line',
+                        borderColor: 'rgba(139, 92, 246, 0.4)',
+                        borderDash: [8, 4],
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: false,
+                        order: 1
+                    },
+                    {
+                        label: 'Módulos',
+                        data: moduleData.map(m => ({x: m.i, y: m.a})),
+                        backgroundColor: modColors,
+                        borderColor: modColors.map(c => c + '80'),
+                        borderWidth: 2,
+                        pointRadius: 12,
+                        pointHoverRadius: 16,
+                        order: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                if (ctx.datasetIndex === 0) return '';
+                                const m = moduleData[ctx.dataIndex];
+                                return `${m.name}: A=${m.a.toFixed(4)}, I=${m.i.toFixed(4)}, D=${m.d.toFixed(4)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Instabilidade (I)', color: '#8892b0', font: { family: 'Inter', weight: 600 } },
+                        min: 0, max: 1,
+                        grid: { color: 'rgba(42, 48, 80, 0.3)' },
+                        ticks: { color: '#5a6580', font: { family: 'Inter' } }
+                    },
+                    y: {
+                        title: { display: true, text: 'Abstração (A)', color: '#8892b0', font: { family: 'Inter', weight: 600 } },
+                        min: 0, max: 1,
+                        grid: { color: 'rgba(42, 48, 80, 0.3)' },
+                        ticks: { color: '#5a6580', font: { family: 'Inter' } }
+                    }
+                }
+            },
+            plugins: [{
+                afterDraw(chart) {
+                    const ctx2 = chart.ctx;
+                    const ds = chart.data.datasets[1];
+                    ctx2.font = '600 11px Inter';
+                    ctx2.textAlign = 'center';
+                    ctx2.fillStyle = '#e8ecf4';
+                    ds.data.forEach((pt, i) => {
+                        const meta = chart.getDatasetMeta(1).data[i];
+                        if (meta) {
+                            ctx2.fillText(moduleData[i].name, meta.x, meta.y - 18);
+                        }
+                    });
+                    // Zone labels
+                    ctx2.font = '700 13px Inter';
+                    ctx2.globalAlpha = 0.25;
+                    const tl = chart.scales.x.getPixelForValue(0.15);
+                    const tt = chart.scales.y.getPixelForValue(0.85);
+                    ctx2.fillStyle = '#ef4444';
+                    ctx2.fillText('Zona da Inutilidade', tl + 40, tt + 15);
+                    const br = chart.scales.x.getPixelForValue(0.85);
+                    const bb = chart.scales.y.getPixelForValue(0.15);
+                    ctx2.fillStyle = '#ef4444';
+                    ctx2.fillText('Zona da Dor', br - 30, bb - 10);
+                    ctx2.globalAlpha = 1.0;
+                }
+            }]
+        });
+
+        // A/I Grouped Bar Chart
+        new Chart(document.getElementById('aiBarChart'), {
+            type: 'bar',
+            data: {
+                labels: moduleData.map(m => m.name),
+                datasets: [
+                    { label: 'Abstração (A)', data: moduleData.map(m => m.a), backgroundColor: '#8b5cf6', borderRadius: 4, maxBarThickness: 20 },
+                    { label: 'Instabilidade (I)', data: moduleData.map(m => m.i), backgroundColor: '#3b82f6', borderRadius: 4, maxBarThickness: 20 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#8892b0', font: { family: 'Inter' } } } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#5a6580', font: { size: 10, family: 'Inter' } } },
+                    y: { beginAtZero: true, max: 1, grid: { color: 'rgba(42,48,80,0.3)' }, ticks: { color: '#5a6580' } }
+                }
+            }
+        });
+
+        // Distance Bar Chart
+        new Chart(document.getElementById('distanceBarChart'), {
+            type: 'bar',
+            data: {
+                labels: moduleData.map(m => m.name),
+                datasets: [{
+                    label: 'Distância (D)',
+                    data: moduleData.map(m => m.d),
+                    backgroundColor: moduleData.map(m => m.d <= 0.2 ? '#10b981' : m.d <= 0.5 ? '#f59e0b' : '#ef4444'),
+                    borderRadius: 6, borderSkipped: false, maxBarThickness: 40
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `D = ${ctx.raw.toFixed(4)}` } } },
+                scales: {
+                    x: { beginAtZero: true, max: 1, grid: { color: 'rgba(42,48,80,0.3)' }, ticks: { color: '#5a6580' } },
+                    y: { grid: { display: false }, ticks: { color: '#8892b0', font: { size: 11, family: 'Inter', weight: 500 } } }
+                }
+            }
+        });
+
+        // =====================================================
+        // SECTION 3: CONNASCENCE CHARTS
+        // =====================================================
+
+        // Connascence Type Doughnut
+        new Chart(document.getElementById('connDoughnut'), {
+            type: 'doughnut',
+            data: {
+                labels: ['CoN (Nome): 31', 'CoT (Tipo): 156', 'CoM (Significado): 2', 'CoP (Posição): 11'],
+                datasets: [{
+                    data: [31, 156, 2, 11],
+                    backgroundColor: ['#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6'],
+                    borderColor: 'transparent', borderWidth: 0, hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '60%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#8892b0', padding: 12, usePointStyle: true, font: { size: 10, family: 'Inter' } } },
+                    tooltip: { callbacks: { label: ctx => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); return `${ctx.label} (${((ctx.raw/t)*100).toFixed(1)}%)`; } } }
+                }
+            }
+        });
+
+        // Concrete vs Abstract deps
+        new Chart(document.getElementById('connTypeChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Dependências'],
+                datasets: [
+                    { label: 'Concretas (156)', data: [156], backgroundColor: '#ef4444', borderRadius: 6, barPercentage: 0.6 },
+                    { label: 'Abstratas (16)', data: [16], backgroundColor: '#10b981', borderRadius: 6, barPercentage: 0.6 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#8892b0', font: { family: 'Inter' } } },
+                    tooltip: { callbacks: { label: ctx => `${ctx.dataset.label} — ${((ctx.raw/172)*100).toFixed(1)}%` } }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#5a6580' } },
+                    y: { beginAtZero: true, grid: { color: 'rgba(42,48,80,0.3)' }, ticks: { color: '#5a6580' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

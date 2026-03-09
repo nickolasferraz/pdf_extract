@@ -8,13 +8,24 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class IpGateFilter extends OncePerRequestFilter {
 
     private final IpBlockService ipBlockService;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+    private final List<String> excludedPaths = Arrays.asList(
+            "/api/auth/**",
+            "/oauth2/**",
+            "/login/oauth2/**",
+            "/api/credit-packages/**",
+            "/api/v1/webhooks/**"
+    );
 
     public IpGateFilter(IpBlockService ipBlockService) {
         this.ipBlockService = ipBlockService;
@@ -25,10 +36,11 @@ public class IpGateFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-
         String uri = request.getRequestURI();
 
-        if (uri.startsWith("/api/auth/") || uri.startsWith("/oauth2/") || uri.startsWith("/login/oauth2/")) {
+        // Verifica se a URI corresponde a algum dos padrões de exclusão
+        boolean isExcluded = excludedPaths.stream().anyMatch(p -> pathMatcher.match(p, uri));
+        if (isExcluded) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -39,7 +51,6 @@ public class IpGateFilter extends OncePerRequestFilter {
                 auth != null
                         && auth.isAuthenticated()
                         && !(auth instanceof AnonymousAuthenticationToken);
-
 
         // Se está autenticado, passa direto (não bloqueia por IP)
         if (isAuthenticated) {
@@ -66,12 +77,10 @@ public class IpGateFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-
     private boolean isProtectedPath(HttpServletRequest request){
         return "Post".equalsIgnoreCase(request.getMethod())
                 && request.getRequestURI().startsWith("/api/pdf-to-excel");
     }
-
 
     private String extractClientIp(HttpServletRequest request){
         String xf=request.getHeader("X-Forwarded-For");

@@ -1,6 +1,5 @@
 package com.example.pdf_extratct.security.redis;
 
-import com.example.pdf_extratct.Payment.dto.CreditPackgesRequestDTO;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import org.springframework.boot.CommandLineRunner;
@@ -11,7 +10,7 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.*;
-import tools.jackson.databind.json.JsonMapper;
+
 
 import java.time.Duration;
 

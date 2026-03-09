@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 @Component
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
@@ -30,40 +32,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        // ═══════════════════════════════════════════════════════════
-        // CÓDIGO ANTIGO (só lia do header Authorization: Bearer)
-        // ═══════════════════════════════════════════════════════════
-        // String authHeader = request.getHeader("Authorization");
-        //
-        // if (authHeader != null && authHeader.startsWith("Bearer ")) {
-        //     String token = authHeader.substring(7);
-        //
-        //     if (jwtUtil.validateToken(token) && !jwtUtil.isTokenExpired(token)) {
-        //         String userId = jwtUtil.getUserIdFromToken(token);
-        //
-        //         UserEntity user = userRepository.findById(userId).orElse(null);
-        //
-        //         if (user != null) {
-        //             UsernamePasswordAuthenticationToken authentication =
-        //                     new UsernamePasswordAuthenticationToken(
-        //                             user,
-        //                             null,
-        //                             new ArrayList<>()
-        //                     );
-        //
-        //             authentication.setDetails(
-        //                     new WebAuthenticationDetailsSource().buildDetails(request)
-        //             );
-        //
-        //             SecurityContextHolder.getContext().setAuthentication(authentication);
-        //         }
-        //     }
-        // }
-        // ═══════════════════════════════════════════════════════════
-
-        // ═══════════════════════════════════════════════════════════
-        // CÓDIGO NOVO (lê do cookie JWT + fallback para header Bearer)
-        // ═══════════════════════════════════════════════════════════
         String token = null;
 
         // 1) Tentar ler do cookie httpOnly "JWT"
@@ -71,6 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
                 if ("JWT".equals(cookie.getName())) {
                     token = cookie.getValue();
+                    log.debug("Token JWT encontrado no cookie.");
                     break;
                 }
             }
@@ -81,19 +50,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 token = authHeader.substring(7);
+                log.debug("Token JWT encontrado no header 'Authorization'.");
             }
         }
 
-        // 3) Validar e autenticar
-        if (token != null && jwtUtil.validateToken(token) && !jwtUtil.isTokenExpired(token)) {
-            String userId = jwtUtil.getUserIdFromToken(token);
-            UserEntity user = userRepository.findById(userId).orElse(null);
+        if (token == null) {
+            log.debug("Nenhum token JWT encontrado na requisição para a URI: {}", request.getRequestURI());
+        }
 
-            if (user != null) {
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+        // 3) Validar e autenticar
+        if (token != null) {
+            if (jwtUtil.validateToken(token) && !jwtUtil.isTokenExpired(token)) {
+                String userId = jwtUtil.getUserIdFromToken(token);
+                log.debug("Token válido para o userId: {}", userId);
+
+                UserEntity user = userRepository.findById(userId).orElse(null);
+
+                if (user != null) {
+                    log.debug("Usuário encontrado no banco de dados: {}", user.getEmail());
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.debug("Usuário autenticado com sucesso e SecurityContext atualizado.");
+                } else {
+                    log.warn("Usuário com ID {} não encontrado no banco de dados, mas o token é válido.", userId);
+                }
+            } else {
+                log.warn("Token JWT inválido ou expirado.");
             }
         }
 

@@ -15,7 +15,7 @@ spring:
       timeout: 60000
 
     mongodb:
-      uri: mongodb://app_user:SB1hd18x5C43NupQ@195.35.19.80:27017/pdf_extract_logs?authSource=admin
+      uri: mongodb://app_user:SB1hd18x5C43NupQ@localhost:27017/pdf_extract_logs?authSource=admin
 
 #  devtools:
 #    livereload:
