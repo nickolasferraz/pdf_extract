@@ -14,6 +14,9 @@ public record CreateReferenceRequestDto(
         int totalAmount,
 
         @NotNull
+        int packageId,
+
+        @NotNull
         PayerDTO payer,
 
         @NotNull

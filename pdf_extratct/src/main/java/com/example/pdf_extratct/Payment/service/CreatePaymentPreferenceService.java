@@ -19,8 +19,8 @@ public class CreatePaymentPreferenceService {
         this.mercadoPagoClient = mercadoPagoClient;
     }
 
-    public CreatePreferenceResponseDTO createPreference(CreateReferenceRequestDto inputdata){
-        log.info("Creating payment preference for mercado pago api:{}",inputdata.toString());
+    public CreatePreferenceResponseDTO createPreference(CreateReferenceRequestDto inputdata, String userId){
+        log.info("Creating payment preference for mercado pago api:{} with local userId: {}",inputdata.toString(), userId);
         //validar Resquest
         //validar usuário
         //validar produto
@@ -31,7 +31,7 @@ public class CreatePaymentPreferenceService {
 
         try{
 
-            return  mercadoPagoClient.createpreference(inputdata,orderNumber);
+            return  mercadoPagoClient.createpreference(inputdata, orderNumber, userId, inputdata.packageId());
         }
         catch (MPException e){
             log.info("Erro ao Criar Preferência de pagamento:{} ",e.getMessage());

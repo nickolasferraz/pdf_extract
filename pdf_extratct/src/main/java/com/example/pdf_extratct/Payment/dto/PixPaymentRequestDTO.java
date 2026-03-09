@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 
 public record PixPaymentRequestDTO(
         @JsonProperty("transaction_amount") BigDecimal transactionAmount,
+        @JsonProperty("package_id") Integer packageId,
         String description,
         @JsonProperty("payment_method_id") String paymentMethodId,
         PayerDTO payer

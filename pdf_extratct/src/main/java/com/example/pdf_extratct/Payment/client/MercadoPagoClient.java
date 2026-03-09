@@ -37,7 +37,7 @@ public class MercadoPagoClient {
         log.info("Mercado API Conectado");
     }
 
-    public CreatePreferenceResponseDTO createpreference(CreateReferenceRequestDto inputdata, String orderNumber)
+    public CreatePreferenceResponseDTO createpreference(CreateReferenceRequestDto inputdata, String orderNumber, String userId, Integer packageId)
             throws MPException, MPApiException {
 
         PreferenceClient preferenceClient = new PreferenceClient();
@@ -63,7 +63,7 @@ public class MercadoPagoClient {
                     .items(items)
                     .backUrls(backUrlsRequest)
                     .notificationUrl(notificationUrl)
-                    .externalReference(orderNumber)
+                    .externalReference(userId + "|" + packageId)
                     .build();
 
             Preference preference = preferenceClient.create(preferenceRequest, requestOptions);
@@ -101,6 +101,7 @@ public class MercadoPagoClient {
         return PaymentEntity.builder()
                 .id(paymentMercadoPago.getId().toString())
                 .orderId(paymentMercadoPago.getExternalReference())
+                .externalReference(paymentMercadoPago.getExternalReference())
                 .status(status)
                 .amount(paymentMercadoPago.getTransactionAmount() != null ? paymentMercadoPago.getTransactionAmount().toString() : null)
                 .statusDetail(paymentMercadoPago.getStatusDetail())
@@ -109,7 +110,7 @@ public class MercadoPagoClient {
                 .build();
     }
 
-    public PaymentCreateResponsetDTO processpayment(CardPaymentDTO inputdata) throws MPException, MPApiException{
+    public PaymentCreateResponsetDTO processpayment(CardPaymentDTO inputdata, String userId, Integer packageId) throws MPException, MPApiException{
         try {
             PaymentClient client= new PaymentClient();
             MPRequestOptions mpRequestOptions = MPRequestOptionsFactory.createWithIdempotencyKey();
@@ -135,7 +136,9 @@ public class MercadoPagoClient {
                                                     .number(identificationNumber)
                                                     .build())
                                     .build()
-                    ).build();
+                    )
+                    .externalReference(userId + "|" + packageId)
+                    .build();
 
             Payment payment = client.create(paymentCreateRequest, mpRequestOptions);
 
@@ -176,7 +179,7 @@ public class MercadoPagoClient {
         return null;
     }
 
-    public PixPaymentResponseDTO createPixPayment(PixPaymentRequestDTO inputdata) throws MPException, MPApiException {
+    public PixPaymentResponseDTO createPixPayment(PixPaymentRequestDTO inputdata, String userId, Integer packageId) throws MPException, MPApiException {
         try {
             PaymentClient client = new PaymentClient();
             MPRequestOptions mpRequestOptions = MPRequestOptionsFactory.createWithIdempotencyKey();
@@ -201,7 +204,9 @@ public class MercadoPagoClient {
                                                     .number(identificationNumber)
                                                     .build())
                                     .build()
-                    ).build();
+                    )
+                    .externalReference(userId + "|" + packageId)
+                    .build();
 
             Payment payment = client.create(paymentCreateRequest, mpRequestOptions);
 

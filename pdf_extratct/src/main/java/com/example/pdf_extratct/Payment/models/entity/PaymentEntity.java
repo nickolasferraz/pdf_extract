@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class PaymentEntity {
     private String id;
     private String orderId;
+    private String externalReference;
     private String status;
     private String amount;
     private String statusDetail;

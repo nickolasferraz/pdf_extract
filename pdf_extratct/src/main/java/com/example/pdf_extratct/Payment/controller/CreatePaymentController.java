@@ -2,10 +2,12 @@ package com.example.pdf_extratct.Payment.controller;
 
 import com.example.pdf_extratct.Payment.dto.CardPaymentDTO;
 import com.example.pdf_extratct.Payment.dto.PaymentCreateResponsetDTO;
+import com.example.pdf_extratct.loginpage.user.UserEntity;
 import com.example.pdf_extratct.Payment.service.PaymentService;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,9 +23,15 @@ public class CreatePaymentController {
     private final PaymentService paymentService;
 
     @PostMapping("/CreditCard")
-    public ResponseEntity<?> processPayment(@RequestBody CardPaymentDTO cardPaymentDTO) {
+    public ResponseEntity<?> processPayment(
+            @RequestBody CardPaymentDTO cardPaymentDTO,
+            @AuthenticationPrincipal UserEntity user) {
         try {
-            PaymentCreateResponsetDTO response = paymentService.processPayment(cardPaymentDTO);
+            if (user == null || user.getUserId() == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não autenticado");
+            }
+            // Passa o ID do usuário local autenticado e o packageId
+            PaymentCreateResponsetDTO response = paymentService.processPayment(cardPaymentDTO, user.getUserId().toString(), cardPaymentDTO.getPackageId());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (MPApiException e) {
             // Erro vindo da API do Mercado Pago (ex: dados inválidos)

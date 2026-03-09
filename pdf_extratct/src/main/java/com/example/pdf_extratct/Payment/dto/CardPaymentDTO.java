@@ -26,6 +26,9 @@ public class CardPaymentDTO {
     private BigDecimal transactionAmount;
 
     @NotNull
+    private Integer packageId;
+
+    @NotNull
     private Integer installments;
 
     @NotNull

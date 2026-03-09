@@ -14,8 +14,8 @@ public class CreatePixPaymentService {
 
     private final MercadoPagoClient mercadoPagoClient;
 
-    public PixPaymentResponseDTO createPayment(PixPaymentRequestDTO request) throws MPException, MPApiException {
+    public PixPaymentResponseDTO createPayment(PixPaymentRequestDTO request, String userId) throws MPException, MPApiException {
         // O DTO já vem preenchido do Controller, então apenas delegamos para o Client
-        return mercadoPagoClient.createPixPayment(request);
+        return mercadoPagoClient.createPixPayment(request, userId, request.packageId());
     }
 }

@@ -8,6 +8,6 @@ import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 
 public interface PaymentService {
-    PaymentCreateResponsetDTO processPayment(CardPaymentDTO cardPaymentDTO) throws MPException, MPApiException;
-    PixPaymentResponseDTO createPixPayment(PixPaymentRequestDTO request) throws MPException, MPApiException;
+    PaymentCreateResponsetDTO processPayment(CardPaymentDTO cardPaymentDTO, String userId, Integer packageId) throws MPException, MPApiException;
+    PixPaymentResponseDTO createPixPayment(PixPaymentRequestDTO request, String userId, Integer packageId) throws MPException, MPApiException;
 }

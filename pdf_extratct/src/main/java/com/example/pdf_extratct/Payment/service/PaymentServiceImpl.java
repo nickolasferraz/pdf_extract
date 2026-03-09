@@ -20,29 +20,15 @@ public class PaymentServiceImpl implements PaymentService {
     // private final PaymentRepository paymentRepository; // Você injetaria seu repositório aqui
 
     @Override
-    public PaymentCreateResponsetDTO processPayment(CardPaymentDTO cardPaymentDTO) throws MPException, MPApiException {
-        log.info("Processing payment for payer: {}", cardPaymentDTO.getPayer().getEmail());
-
-        // A lógica de chamar o cliente de pagamento foi movida para cá
-        PaymentCreateResponsetDTO paymentResponse = mercadoPagoClient.processpayment(cardPaymentDTO);
-
-        // --- LÓGICA DE NEGÓCIO ADICIONAL IRIA AQUI ---
-        // Exemplo:
-        // 1. Converter o DTO de resposta para a sua PaymentEntity
-        // PaymentEntity paymentEntity = mapToEntity(paymentResponse);
-        //
-        // 2. Salvar a entidade no banco de dados
-        // paymentRepository.save(paymentEntity);
-        // log.info("Payment with ID {} saved successfully.", paymentEntity.getId());
-        //
-        // 3. Enviar uma notificação, atualizar um pedido, etc.
-
-        return paymentResponse;
+    public PaymentCreateResponsetDTO processPayment(CardPaymentDTO cardPaymentDTO, String userId, Integer packageId) throws MPException, MPApiException {
+        log.info("Processing payment for payer: {} with local userId: {} and packageId: {}", cardPaymentDTO.getPayer().getEmail(), userId, packageId);
+        // Agora, extraímos tanto o pacote do frontend (DTO) quanto o usuário do Token (Controller)
+        return mercadoPagoClient.processpayment(cardPaymentDTO, userId, packageId);
     }
 
     @Override
-    public PixPaymentResponseDTO createPixPayment(PixPaymentRequestDTO request) throws MPException, MPApiException {
-        log.info("Processing Pix payment for payer: {}", request.payer().email());
-        return mercadoPagoClient.createPixPayment(request);
+    public PixPaymentResponseDTO createPixPayment(PixPaymentRequestDTO request, String userId, Integer packageId) throws MPException, MPApiException {
+        log.info("Processing Pix payment for payer: {} with local userId: {} and packageId: {}", request.payer().email(), userId, packageId);
+        return mercadoPagoClient.createPixPayment(request, userId, packageId);
     }
 }
