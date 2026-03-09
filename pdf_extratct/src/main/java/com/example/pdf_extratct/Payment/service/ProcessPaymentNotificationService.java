@@ -6,6 +6,8 @@ import com.example.pdf_extratct.Payment.dto.ProcessNotificationResponseDTO;
 import com.example.pdf_extratct.Payment.models.entity.PaymentEntity;
 import com.example.pdf_extratct.Payment.CreditPackgesRepository;
 import com.example.pdf_extratct.Payment.models.entity.CreditPackagesEntity;
+import com.example.pdf_extratct.loginpage.credittransaction.CreditService;
+import com.example.pdf_extratct.loginpage.credittransaction.TransactionType;
 import com.example.pdf_extratct.loginpage.user.UserRepository;
 import com.example.pdf_extratct.loginpage.user.UserEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +21,16 @@ public class ProcessPaymentNotificationService {
     private final MercadoPagoClient mercadoPagoClient;
     private final UserRepository userRepository;
     private final CreditPackgesRepository creditPackgesRepository;
+    private final CreditService creditService;
 
-    public ProcessPaymentNotificationService(MercadoPagoClient mercadoPagoClient, UserRepository userRepository, CreditPackgesRepository creditPackgesRepository) {
+    public ProcessPaymentNotificationService(MercadoPagoClient mercadoPagoClient, 
+                                             UserRepository userRepository, 
+                                             CreditPackgesRepository creditPackgesRepository,
+                                             CreditService creditService) {
         this.mercadoPagoClient = mercadoPagoClient;
         this.userRepository = userRepository;
         this.creditPackgesRepository = creditPackgesRepository;
+        this.creditService = creditService;
     }
 
     @Transactional
@@ -57,9 +64,16 @@ public class ProcessPaymentNotificationService {
                         
                         if (creditPackage != null) {
                             int creditsToAdd = creditPackage.getCredits();
-                            user.setCreditBalance(user.getCreditBalance() + creditsToAdd);
-                            userRepository.save(user);
-                            log.info("Adicionado {} créditos para o usuário {} referentes ao pacote ID {}", creditsToAdd, user.getEmail(), packageId);
+                            String description = "Compra de Créditos - Pacote " + creditPackage.getName();
+                            
+                            creditService.addCredits(
+                                    user,
+                                    creditsToAdd,
+                                    TransactionType.PURCHASE,
+                                    description
+                            );
+                            
+                            log.info("Adicionado {} créditos para o usuário {} referentes ao pacote ID {} e transação PURCHASE salva", creditsToAdd, user.getEmail(), packageId);
                         } else {
                             log.error("Pacote ID {} não encontrado no banco de dados para a atribuição de créditos", packageId);
                         }
