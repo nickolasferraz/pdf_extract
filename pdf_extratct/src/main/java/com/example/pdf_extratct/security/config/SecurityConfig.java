@@ -67,6 +67,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> {
                 
                 // 1. Libera as rotas de cota de IP e totalmente públicas dinamicamente do YAML (Garante OCP)
+                auth.requestMatchers("/api/v1/webhooks/**", "/api/v1/payments/**").permitAll();
+                
                 if (!securityProperties.getPublicPaths().isEmpty()) {
                     auth.requestMatchers(securityProperties.getPublicPathsArray()).permitAll();
                 }
@@ -90,12 +92,8 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterAfter(ipGateFilter, jwtAuthenticationFilter.getClass());
 
-        // Configuração de CORS por Ambiente (Garante DRY)
-        if (isDev) {
-            http.cors(cors -> cors.configurationSource(corsConfigurationSource));
-        } else {
-            http.cors(cors -> cors.disable());
-        }
+        // Configuração de CORS centralizada (CorsConfig)
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource));
 
         return http.build();
     }

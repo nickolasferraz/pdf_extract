@@ -20,7 +20,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class MercadoPagoWrapperImpl implements MercadoPagoWrapper {
 
-    @Value("${api.v1.mercadopago-access-token-vendedor}")
+//    @Value("${api.v1.mercadopago-access-token-vendedor}")
+    @Value("${api.v1.mercadopago-acess-token-prod-vendedor}")
     private String accessToken;
 
     private PaymentClient paymentClient;

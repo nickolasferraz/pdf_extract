@@ -9,20 +9,32 @@ import com.example.pdf_extratct.loginpage.credittransaction.TransactionType;
 import com.example.pdf_extratct.loginpage.credittransaction.strategy.CreditTransactionStrategy;
 import com.example.pdf_extratct.loginpage.user.UserEntity;
 import com.example.pdf_extratct.loginpage.user.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class CreditCommandServiceImpl implements CreditCommandService {
 
     private final UserRepository userRepository;
     private final CreditTransactionRepository transactionRepository;
     private final CreditPackgesRepository creditPackgesRepository;
     private final Map<TransactionType, CreditTransactionStrategy> strategies;
+
+    public CreditCommandServiceImpl(
+            UserRepository userRepository,
+            CreditTransactionRepository transactionRepository,
+            CreditPackgesRepository creditPackgesRepository,
+            List<CreditTransactionStrategy> strategiesList) {
+        this.userRepository = userRepository;
+        this.transactionRepository = transactionRepository;
+        this.creditPackgesRepository = creditPackgesRepository;
+        this.strategies = strategiesList.stream()
+                .collect(Collectors.toMap(CreditTransactionStrategy::getTransactionType, strategy -> strategy));
+    }
 
     @Transactional
     @Override

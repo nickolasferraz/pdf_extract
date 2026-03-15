@@ -20,6 +20,11 @@ public class SecurityProperties {
     private List<String> publicPaths = new ArrayList<>();
 
     /**
+     * Lista de origens permitidas para CORS.
+     */
+    private List<String> allowedOrigins = new ArrayList<>();
+
+    /**
      * Rotas protegidas ou específicas que são monitoradas pelo controle de cota (IpGateFilter).
      * Exemplo: /api/pdf-to-excel
      */

@@ -14,15 +14,22 @@ import java.util.Arrays;
 @Configuration
 public class CorsConfig {
 
+    private final SecurityProperties securityProperties;
+
+    public CorsConfig(SecurityProperties securityProperties) {
+        this.securityProperties = securityProperties;
+    }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Permitir origens do frontend (desenvolvimento e produção)
-        configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:4200",
-            "http://localhost:8080"
-        ));
+        // Permitir origens do frontend (dinâmico via properties)
+        if (securityProperties.getAllowedOrigins() != null && !securityProperties.getAllowedOrigins().isEmpty()) {
+            configuration.setAllowedOrigins(securityProperties.getAllowedOrigins());
+        } else {
+            configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "http://localhost:8080"));
+        }
         
         // Permitir todos os métodos HTTP
         configuration.setAllowedMethods(Arrays.asList(

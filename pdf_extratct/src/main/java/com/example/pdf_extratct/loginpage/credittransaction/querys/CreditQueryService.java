@@ -33,7 +33,7 @@ public class CreditQueryService {
 
         return transactions.map(transaction ->
                 new TransactionResponse(
-                        String.valueOf(transaction.getId()),
+                        String.valueOf(transaction.getTransactionId()),
                         transaction.getType(),
                         transaction.getAmount(),
                         transaction.getBalanceBefore(),

@@ -8,19 +8,13 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 6379
-      username: default
-      password: Y6e93GWCcuwTapQt
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      username: ${REDIS_USERNAME:default}
+      password: ${REDIS_PASSWORD:Y6e93GWCcuwTapQt}
       timeout: 60000
-
-  mongodb:
-    host: localhost
-    port: 27017
-    database: pdf_extract_logs
-    username: app_user
-    password: SB1hd18x5C43NupQ
-    authentication-database: admin
+    mongodb:
+      uri: mongodb://${MONGO_USERNAME:app_user}:${MONGO_PASSWORD:SB1hd18x5C43NupQ}@${MONGO_HOST:localhost}:${MONGO_PORT:27017}/${MONGO_DATABASE:pdf_extract_logs}?authSource=${MONGO_AUTH_DB:admin}
 
 #  devtools:
 #    livereload:
@@ -29,9 +23,9 @@ spring:
 #      enabled: true
 
   datasource:
-    url: jdbc:postgresql://localhost:8001/postgres
-    username: postgres
-    password: aea0d89357af91b3775c7ca4d2a99704
+    url: ${DB_URL:jdbc:postgresql://localhost:8001/postgres}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:aea0d89357af91b3775c7ca4d2a99704}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -40,8 +34,8 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${HIBERNATE_DDL_AUTO:validate}
+    show-sql: ${SHOW_SQL:false}
     properties:
       hibernate:
         format_sql: true
@@ -52,12 +46,12 @@ spring:
       client:
         registration:
           google:
-            client-id: 870141349909-8qk4rrg4jtm2b9p6mkpmls4et9lnv4rt.apps.googleusercontent.com
-            client-secret: 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
+            client-id: ${GOOGLE_CLIENT_ID:870141349909-8qk4rrg4jtm2b9p6mkpmls4et9lnv4rt.apps.googleusercontent.com}
+            client-secret: ${GOOGLE_CLIENT_SECRET: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}
             scope:
               - email
               - profile
-            redirect-uri: "{baseUrl}/login/oauth2/code/google"
+            redirect-uri: ${GOOGLE_REDIRECT_URI:{baseUrl}/login/oauth2/code/google}
 
   servlet:
     multipart:
@@ -76,7 +70,7 @@ spring:
               temperature: 0.1
 
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:prod}
 
 server:
   port: 8080
@@ -91,8 +85,8 @@ storage:
   location: ./uploads/
 
 jwt:
-  secret: YsZQUtmOPQ/EY0Eba+0CLUQJOA4+mpkHqQDHnA0w6Uo=
-  expiration: 86400000
+  secret: ${JWT_SECRET:YsZQUtmOPQ/EY0Eba+0CLUQJOA4+mpkHqQDHnA0w6Uo=}
+  expiration: ${JWT_EXPIRATION:86400000}
 
 logging:
   level:
@@ -108,8 +102,10 @@ springdoc:
 
 api:
   v1:
-    mercadopago-access-token-vendedor: TEST-5346233072327713-022100-af3ebec84e85c7d265f7b5151a6fb96b-3213929116
-    mercadopago-notification-url: https://aristocratically-inaccessible-lucien.ngrok-free.dev/api/v1/webhooks/mercadopago
+    mercadopago-acess-token-prod-vendedor: ${MP_ACCESS_TOKEN_PROD:APP_USR-5346233072327713-022100-8d15b6878a1e69eacc0bea549412c686-3213929116}
+    mercadopago-access-token-vendedor: ${MP_ACCESS_TOKEN_TEST:TEST-5346233072327713-022100-af3ebec84e85c7d265f7b5151a6fb96b-3213929116}
+    mercadopago-notification-url: ${MP_NOTIFICATION_URL:https://aristocratically-inaccessible-lucien.ngrok-free.dev/api/v1/webhooks/mercadopago}
+    mercadopago-public-key: ${MP_PUBLIC_KEY:APP_USR-5a0c9f64-37db-4f59-8efd-478ebfa6ac1d}
 
 app:
   security:
@@ -125,6 +121,10 @@ app:
       - /api/v1/webhooks/**
       - /swagger-ui/**
       - /v3/api-docs/**
+    allowed-origins:
+      - http://localhost:4200
+      - http://localhost:8080
+      - ${ALLOWED_ORIGINS:}
     ip-gated-paths:
       - /api/files
       - /api/pdf-to-excel

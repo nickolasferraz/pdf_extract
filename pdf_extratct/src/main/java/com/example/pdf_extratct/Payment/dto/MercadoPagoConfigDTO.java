@@ -1,10 +1,12 @@
 package com.example.pdf_extratct.Payment.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MercadoPagoConfigDTO{
     private  String action;
     private  String api_version;

@@ -41,6 +41,12 @@ public abstract class BaseIntegrationTest {
     @MockBean
     protected JwtUtil jwtUtil;
 
+    @org.junit.jupiter.api.BeforeEach
+    void setupRedisMock() {
+        org.springframework.data.redis.core.ValueOperations<String, String> valueOps = org.mockito.Mockito.mock(org.springframework.data.redis.core.ValueOperations.class);
+        org.mockito.Mockito.when(stringRedisTemplate.opsForValue()).thenReturn(valueOps);
+    }
+
     protected String generateTestJwt(String userId, String email) {
         String token = "mocked-jwt-token";
         org.mockito.Mockito.when(jwtUtil.generateToken(userId, email)).thenReturn(token);

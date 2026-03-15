@@ -4,10 +4,9 @@ import com.example.pdf_extratct.Payment.dto.MercadoPagoConfigDTO;
 import com.example.pdf_extratct.Payment.service.ProcessPaymentNotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -21,22 +20,38 @@ public class WebhookController {
     }
 
     @PostMapping("/mercadopago")
-    public ResponseEntity<Void> handlerNotification(@RequestBody MercadoPagoConfigDTO mercadoPagoConfigDTO){
+    public ResponseEntity<Void> handlerNotification(
+            @RequestBody(required = false) MercadoPagoConfigDTO body,
+            @RequestParam Map<String, String> params){
 
-        String resourceId= mercadoPagoConfigDTO.getData().getId();
-        String resourceType= mercadoPagoConfigDTO.getType();
+        String resourceId = null;
+        String resourceType = null;
+
+        // Try to get from body (Webhooks)
+        if (body != null && body.getData() != null) {
+            resourceId = body.getData().getId();
+            resourceType = body.getType();
+        } 
+        
+        // Fallback to query params (IPN)
+        if (resourceId == null) {
+            resourceId = params.get("id");
+            resourceType = params.get("topic"); // IPN uses 'topic', Webhooks uses 'type'
+        }
+
+        if (resourceId == null) {
+            log.warn("Recebido Webhook/IPN vazio ou sem ID. Params: {}", params);
+            return ResponseEntity.ok().build(); // Retorna 200 para evitar retentativas infinitas de lixo
+        }
 
         try {
-            var result=processPayamentNotificationService.processNotification(resourceId,resourceType);
-
-            log.info("Webhook processed sucessfully for resource ID:{} and resource type:{}",result.sucess(),resourceType);
-
-        }catch (Exception e){
-            log.error("Erro ao processar notificação do mercado pago {}",e.getMessage());
+            var result = processPayamentNotificationService.processNotification(resourceId, resourceType);
+            log.info("Webhook processed sucessfully for resource ID:{} and resource type:{}", resourceId, resourceType);
+        } catch (Exception e){
+            log.error("Erro ao processar notificação do mercado pago {}: {}", resourceId, e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
 
         return ResponseEntity.ok().build();
-
     }
 }

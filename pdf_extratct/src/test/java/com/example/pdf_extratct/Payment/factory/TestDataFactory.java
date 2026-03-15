@@ -144,7 +144,7 @@ public class TestDataFactory {
 
     public static CreditTransactionEntity createValidTransactionEntity(UserEntity user) {
         CreditTransactionEntity tx = new CreditTransactionEntity();
-        tx.setId(1L);
+        tx.setTransactionId(String.valueOf(1L));
         tx.setUser(user);
         tx.setAmount(10);
         tx.setType(TransactionType.PURCHASE);

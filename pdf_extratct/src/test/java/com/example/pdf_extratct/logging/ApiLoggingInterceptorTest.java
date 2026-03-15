@@ -48,7 +48,7 @@ class ApiLoggingInterceptorTest extends BaseIntegrationTest {
         String token = generateTestJwt(testUser.getUserId(), testUser.getEmail());
 
         // Faz uma requisição para um endpoint qualquer (ex: listagem de pacotes)
-        mockMvc.perform(get("/api/v1/credit-packages")
+        mockMvc.perform(get("/api/credit-packages")
                         .cookie(new Cookie("JWT", token)))
                 .andExpect(status().isOk());
 
@@ -57,7 +57,7 @@ class ApiLoggingInterceptorTest extends BaseIntegrationTest {
         assertFalse(logs.isEmpty(), "Deve existir pelo menos um log");
         
         ApiLogDocument log = logs.get(0);
-        assertEquals("/api/v1/credit-packages", log.getEndpoint());
+        assertEquals("/api/credit-packages", log.getEndpoint());
         assertEquals("GET", log.getMethod());
         assertEquals(200, log.getStatusCode());
         assertEquals(testUser.getUserId(), log.getUserId());
