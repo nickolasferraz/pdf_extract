@@ -1,0 +1,16 @@
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: test_db
+  mongodb:
+    embedded:
+      version: 4.0.12
+  cache:
+    type: none
+
+logging:
+  level:
+    org.springframework.data.mongodb: INFO
+    de.flapdoodle.embed.mongo: INFO

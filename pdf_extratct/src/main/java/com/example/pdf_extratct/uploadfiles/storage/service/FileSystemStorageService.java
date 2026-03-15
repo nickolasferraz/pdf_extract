@@ -24,7 +24,7 @@ public class FileSystemStorageService  implements StorageService {
             throw new SecurityException("File upload location cannot be empty");
         }
 
-        this.rootlocation = Paths.get(properties.getLocation());
+        this.rootlocation = Paths.get(properties.getLocation()).toAbsolutePath().normalize();
         init(); // Call init here to ensure directory is created on service instantiation
     }
 

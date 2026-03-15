@@ -1,9 +1,10 @@
 package com.example.pdf_extratct.loginpage.controllers;
 
-import com.example.pdf_extratct.loginpage.credittransaction.CreditService;
 import com.example.pdf_extratct.loginpage.credittransaction.Dtos.AddCreditsRequest;
 import com.example.pdf_extratct.loginpage.credittransaction.Dtos.CreditBalanceResponse;
 import com.example.pdf_extratct.loginpage.credittransaction.Dtos.TransactionResponse;
+import com.example.pdf_extratct.loginpage.credittransaction.querys.CreditCommandService;
+import com.example.pdf_extratct.loginpage.credittransaction.querys.CreditQueryService;
 import com.example.pdf_extratct.loginpage.user.UserEntity;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,8 @@ import java.util.Map;
 @Tag(name = "Gerenciamento de Créditos", description = "APIs para consultar saldo e histórico de créditos, e adicionar créditos.")
 public class CreditController {
 
-    private final CreditService creditService;
+    private final CreditCommandService creditCommandService;
+    private final CreditQueryService creditQueryService;
 
     @GetMapping("/balance")
     @Operation(summary = "Obter saldo de créditos", description = "Retorna o saldo de créditos atual do usuário autenticado.")
@@ -39,7 +41,7 @@ public class CreditController {
     @ApiResponse(responseCode = "401", description = "Não autorizado", content = @Content)
     public ResponseEntity<CreditBalanceResponse> getBalance(
             @AuthenticationPrincipal UserEntity user) {
-        return ResponseEntity.ok(creditService.getBalance(user));
+        return ResponseEntity.ok(creditQueryService.getBalance(user));
     }
 
     @PostMapping("/add")
@@ -56,7 +58,8 @@ public class CreditController {
     public ResponseEntity<CreditBalanceResponse> addCredits(
             @AuthenticationPrincipal UserEntity user,
             @Valid @RequestBody AddCreditsRequest request) {  // ← Este é do Spring
-        return ResponseEntity.ok(creditService.addCredits(user, request));
+        creditCommandService.execute(request.type(), user, request.amount(), request.description(), null);
+        return ResponseEntity.ok(creditQueryService.getBalance(user));
     }
 
     @GetMapping("/history")
@@ -72,6 +75,7 @@ public class CreditController {
             @RequestParam(defaultValue = "20") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(creditService.getTransactionHistory(user, pageable));
+        return ResponseEntity.ok(creditQueryService.getTransactionHistory(user, pageable));
     }
 }
+

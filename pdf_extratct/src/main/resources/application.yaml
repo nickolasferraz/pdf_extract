@@ -2,9 +2,9 @@ spring:
   application:
     name: pdf_extratct
 
-    threads:
-      virtual:
-        enabled: true
+  threads:
+    virtual:
+      enabled: true
 
   data:
     redis:
@@ -14,8 +14,13 @@ spring:
       password: Y6e93GWCcuwTapQt
       timeout: 60000
 
-    mongodb:
-      uri: mongodb://app_user:SB1hd18x5C43NupQ@localhost:27017/pdf_extract_logs?authSource=admin
+  mongodb:
+    host: localhost
+    port: 27017
+    database: pdf_extract_logs
+    username: app_user
+    password: SB1hd18x5C43NupQ
+    authentication-database: admin
 
 #  devtools:
 #    livereload:
@@ -58,11 +63,6 @@ spring:
     multipart:
       max-file-size: 10GB
       max-request-size: 10GB
-    session:
-      tracking-modes: cookie
-
-  storage:
-    location: ./uploads/
 
   ai:
     vertex:
@@ -83,6 +83,12 @@ server:
   tomcat:
     max-http-form-post-size: 10GB
     max-swallow-size: 10GB
+  servlet:
+    session:
+      tracking-modes: cookie
+
+storage:
+  location: ./uploads/
 
 jwt:
   secret: YsZQUtmOPQ/EY0Eba+0CLUQJOA4+mpkHqQDHnA0w6Uo=
@@ -104,3 +110,21 @@ api:
   v1:
     mercadopago-access-token-vendedor: TEST-5346233072327713-022100-af3ebec84e85c7d265f7b5151a6fb96b-3213929116
     mercadopago-notification-url: https://aristocratically-inaccessible-lucien.ngrok-free.dev/api/v1/webhooks/mercadopago
+
+app:
+  security:
+    public-paths:
+      - /api/auth/login
+      - /api/auth/register
+      - /login/oauth2/**
+      - /oauth2/**
+      - /api/public/**
+      - /api/credit-packages
+      - /api/credit-packages/**
+      - /api/v1/payments/**
+      - /api/v1/webhooks/**
+      - /swagger-ui/**
+      - /v3/api-docs/**
+    ip-gated-paths:
+      - /api/files
+      - /api/pdf-to-excel

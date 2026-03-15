@@ -2,54 +2,49 @@ package com.example.pdf_extratct.loginpage.credittransaction;
 
 import com.example.pdf_extratct.loginpage.user.UserEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import java.sql.Timestamp;
-import java.util.UUID;
+import lombok.*;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+
+@Getter
+@Setter
 @Entity
 @Table(name = "credit_transactions")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreditTransactionEntity {
 
     @Id
-    @Column(name = "transaction_id")
-    private String transactionId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
     @Column(nullable = false)
-    private Integer amount; // Positivo = ganhou créditos, Negativo = gastou
+    private Integer amount;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TransactionType type;
 
-    @Column(name = "balance_before")
+    @Column(nullable = false)
     private Integer balanceBefore;
 
-    @Column(name = "balance_after", nullable = false) // Adicionado nullable = false
+    @Column(nullable = false)
     private Integer balanceAfter;
 
-    @Column(length = 500)
-    private String description; // "Processamento do arquivo X.pdf"
+    @Column(nullable = false)
+    private String description;
 
-    @Column(name = "related_job_id")
-    private String relatedJobId; // Link para o ProcessingJob se for USAGE
+    private String relatedJobId;
+    private String relatedPaymentId;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private Timestamp createdAt;
-
-    @PrePersist
-    public void generateId() {
-        if (this.transactionId == null) {
-            this.transactionId = UUID.randomUUID().toString();
-        }
-    }
+    @Builder.Default
+    @Column(nullable = false, updatable = false)
+    private Timestamp createdAt = Timestamp.from(Instant.now());
 }

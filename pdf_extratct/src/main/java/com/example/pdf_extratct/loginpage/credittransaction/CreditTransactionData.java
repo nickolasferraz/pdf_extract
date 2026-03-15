@@ -9,31 +9,32 @@ public record CreditTransactionData(
         Integer balanceBefore,
         Integer balanceAfter,
         String description,
-        String relatedJobId
+        String relatedJobId,
+        String relatedPaymentId
 ) {
-    // Construtor compacto para validação
     public CreditTransactionData {
         if (amount == null || amount == 0) {
             throw new IllegalArgumentException("Amount não pode ser zero");
         }
     }
 
-    // Factory method para crédito (positivo)
     public static CreditTransactionData forCredit(
             UserEntity user,
             Integer amount,
             TransactionType type,
-            String description
+            String description,
+            String relatedId
     ) {
         Integer balanceBefore = user.getCreditBalance();
         Integer balanceAfter = balanceBefore + amount;
 
         return new CreditTransactionData(
-                user, amount, type, balanceBefore, balanceAfter, description, null
+                user, amount, type, balanceBefore, balanceAfter, description,
+                type == TransactionType.REFUND ? relatedId : null,
+                type == TransactionType.PURCHASE ? relatedId : null
         );
     }
 
-    // Factory method para débito (negativo)
     public static CreditTransactionData forDebit(
             UserEntity user,
             Integer amount,
@@ -44,11 +45,10 @@ public record CreditTransactionData(
         Integer balanceAfter = balanceBefore - amount;
 
         return new CreditTransactionData(
-                user, -amount, TransactionType.USAGE, balanceBefore, balanceAfter, description, jobId
+                user, -amount, TransactionType.USAGE, balanceBefore, balanceAfter, description, jobId, null
         );
     }
 
-    // Converter para Entity
     public CreditTransactionEntity toEntity() {
         CreditTransactionEntity transaction = new CreditTransactionEntity();
         transaction.setUser(user);
@@ -58,7 +58,7 @@ public record CreditTransactionData(
         transaction.setBalanceAfter(balanceAfter);
         transaction.setDescription(description);
         transaction.setRelatedJobId(relatedJobId);
+        transaction.setRelatedPaymentId(relatedPaymentId);
         return transaction;
     }
 }
-

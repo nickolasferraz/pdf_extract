@@ -6,7 +6,7 @@ import com.example.pdf_extratct.loginpage.user.LoginDtos.LoginResponseDto;
 // import com.example.pdf_extratct.loginpage.user.LoginDtos.RegisterResponseDto; // Removido import de RegisterResponseDto
 import com.example.pdf_extratct.loginpage.user.RegisterDtoRequest.UserRegisterRequestDto;
 import com.example.pdf_extratct.loginpage.user.UserEntity;
-import com.example.pdf_extratct.security.JwtUtil;
+import com.example.pdf_extratct.security.jwt.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;

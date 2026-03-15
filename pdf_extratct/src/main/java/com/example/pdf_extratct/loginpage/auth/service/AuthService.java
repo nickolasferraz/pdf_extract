@@ -11,7 +11,7 @@ import com.example.pdf_extratct.loginpage.user.RegisterDtoRequest.UserRegisterRe
 import com.example.pdf_extratct.loginpage.user.strategy.UserCreationStrategyFactory;
 import com.example.pdf_extratct.loginpage.user.UserEntity;
 import com.example.pdf_extratct.loginpage.user.UserRepository;
-import com.example.pdf_extratct.security.JwtUtil;
+import com.example.pdf_extratct.security.jwt.JwtUtil;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

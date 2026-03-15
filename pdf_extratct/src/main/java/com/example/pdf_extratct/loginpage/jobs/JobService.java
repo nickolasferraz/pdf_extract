@@ -13,6 +13,28 @@ import org.springframework.transaction.annotation.Transactional;
 public class JobService {
 
     private final ProcessingJobRepository jobRepository;
+    private final com.example.pdf_extratct.loginpage.jobs.creation.JobCreationFactory jobCreationFactory;
+
+    public ProcessingJobEntity createJob(
+            UserEntity user,
+            String fileName,
+            Long fileSize,
+            Integer estimatedCredits,
+            String clientIp
+    ) {
+        var type = (user != null) ? com.example.pdf_extratct.loginpage.jobs.creation.JobCreationType.AUTHENTICATED
+                                  : com.example.pdf_extratct.loginpage.jobs.creation.JobCreationType.ANONYMOUS;
+
+        var context = com.example.pdf_extratct.loginpage.jobs.creation.JobCreationContext.builder()
+                .user(user)
+                .fileName(fileName)
+                .fileSize(fileSize)
+                .estimatedCredits(estimatedCredits)
+                .clientIp(clientIp)
+                .build();
+
+        return jobCreationFactory.getStrategy(type).create(context);
+    }
 
     public Page<JobResponse> getUserJobs(UserEntity user, Pageable pageable) {
         Page<ProcessingJobEntity> jobs = jobRepository.findByUserOrderByCreatedAtDesc(user, pageable);
