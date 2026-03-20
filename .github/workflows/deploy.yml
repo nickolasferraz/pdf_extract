@@ -25,7 +25,9 @@ jobs:
 
       - name: Build and test with Maven
         working-directory: pdf_extratct
-        run: ./mvnw clean verify -B
+        run: |
+          chmod +x mvnw
+          ./mvnw clean verify -B
 
   # ============================================
   # Job 2: Deploy no servidor
