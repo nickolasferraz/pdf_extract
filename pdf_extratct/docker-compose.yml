@@ -1,0 +1,24 @@
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pdf-extract-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - app-uploads:/app/uploads
+    networks:
+      - supabase_default
+
+volumes:
+  app-uploads:
+
+# Redis, MongoDB e PostgreSQL já existem na rede supabase_default
+networks:
+  supabase_default:
+    external: true

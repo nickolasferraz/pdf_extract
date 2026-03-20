@@ -11,10 +11,10 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       username: ${REDIS_USERNAME:default}
-      password: ${REDIS_PASSWORD:Y6e93GWCcuwTapQt}
+      password: ${REDIS_PASSWORD}
       timeout: 60000
     mongodb:
-      uri: mongodb://${MONGO_USERNAME:app_user}:${MONGO_PASSWORD:SB1hd18x5C43NupQ}@${MONGO_HOST:localhost}:${MONGO_PORT:27017}/${MONGO_DATABASE:pdf_extract_logs}?authSource=${MONGO_AUTH_DB:admin}
+      uri: mongodb://${MONGO_USERNAME:app_user}:${MONGO_PASSWORD}@${MONGO_HOST:localhost}:${MONGO_PORT:27017}/${MONGO_DATABASE:pdf_extract_logs}?authSource=${MONGO_AUTH_DB:admin}
 
 #  devtools:
 #    livereload:
@@ -25,7 +25,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:8001/postgres}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:aea0d89357af91b3775c7ca4d2a99704}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -46,8 +46,8 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID:870141349909-8qk4rrg4jtm2b9p6mkpmls4et9lnv4rt.apps.googleusercontent.com}
-            client-secret: ${GOOGLE_CLIENT_SECRET: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}
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
               - email
               - profile
@@ -85,7 +85,7 @@ storage:
   location: ./uploads/
 
 jwt:
-  secret: ${JWT_SECRET:YsZQUtmOPQ/EY0Eba+0CLUQJOA4+mpkHqQDHnA0w6Uo=}
+  secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}
 
 logging:
@@ -102,10 +102,10 @@ springdoc:
 
 api:
   v1:
-    mercadopago-acess-token-prod-vendedor: ${MP_ACCESS_TOKEN_PROD:APP_USR-5346233072327713-022100-8d15b6878a1e69eacc0bea549412c686-3213929116}
-    mercadopago-access-token-vendedor: ${MP_ACCESS_TOKEN_TEST:TEST-5346233072327713-022100-af3ebec84e85c7d265f7b5151a6fb96b-3213929116}
-    mercadopago-notification-url: ${MP_NOTIFICATION_URL:https://aristocratically-inaccessible-lucien.ngrok-free.dev/api/v1/webhooks/mercadopago}
-    mercadopago-public-key: ${MP_PUBLIC_KEY:APP_USR-5a0c9f64-37db-4f59-8efd-478ebfa6ac1d}
+    mercadopago-acess-token-prod-vendedor: ${MP_ACCESS_TOKEN_PROD}
+    mercadopago-access-token-vendedor: ${MP_ACCESS_TOKEN_TEST}
+    mercadopago-notification-url: ${MP_NOTIFICATION_URL:https://localhost:8080/api/v1/webhooks/mercadopago}
+    mercadopago-public-key: ${MP_PUBLIC_KEY}
 
 app:
   security:
