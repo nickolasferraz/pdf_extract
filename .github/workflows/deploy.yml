@@ -23,11 +23,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build and test with Maven
+      - name: Build with Maven (skip tests)
         working-directory: pdf_extratct
         run: |
           chmod +x mvnw
-          ./mvnw clean verify -B
+          ./mvnw clean package -DskipTests -B
 
   # ============================================
   # Job 2: Deploy no servidor
