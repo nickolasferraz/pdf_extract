@@ -106,6 +106,9 @@ jobs:
             FRONTEND_URL=https://www.pdftoexcel.com.br
             EOF
             
+            # Cria o arquivo de credenciais do Google se o secret existir
+            echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > google-credentials.json
+            
             # Para containers antigos e sobe os novos
             docker compose down
             docker compose up -d
