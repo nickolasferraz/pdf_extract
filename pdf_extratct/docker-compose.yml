@@ -1,9 +1,7 @@
 services:
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: pdf-extract-api:latest
     container_name: pdf-extract-api
     restart: unless-stopped
     ports:
