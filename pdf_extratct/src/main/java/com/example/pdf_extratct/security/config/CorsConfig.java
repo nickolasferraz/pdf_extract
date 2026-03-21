@@ -7,6 +7,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Configuração CORS para permitir requisições do frontend Angular
@@ -25,8 +26,18 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // Permitir origens do frontend (dinâmico via properties)
-        if (securityProperties.getAllowedOrigins() != null && !securityProperties.getAllowedOrigins().isEmpty()) {
-            configuration.setAllowedOrigins(securityProperties.getAllowedOrigins());
+        // O env var ALLOWED_ORIGINS pode conter múltiplas origens separadas por vírgula
+        // ex: "https://pdftoexcel.com.br,https://www.pdftoexcel.com.br"
+        List<String> origins = securityProperties.getAllowedOrigins() != null
+                ? securityProperties.getAllowedOrigins().stream()
+                    .flatMap(o -> Arrays.stream(o.split(",")))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .toList()
+                : Arrays.asList("http://localhost:4200", "http://localhost:8080");
+
+        if (!origins.isEmpty()) {
+            configuration.setAllowedOrigins(origins);
         } else {
             configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "http://localhost:8080"));
         }
