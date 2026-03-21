@@ -1,7 +1,6 @@
 package com.example.pdf_extratct.security.oauth2;
+
 import com.example.pdf_extratct.security.jwt.JwtUtil;
-
-
 import com.example.pdf_extratct.loginpage.auth.AuthAccountEntity;
 import com.example.pdf_extratct.loginpage.auth.AuthAccountRepository;
 import com.example.pdf_extratct.loginpage.auth.AuthProvider;
@@ -12,6 +11,7 @@ import com.example.pdf_extratct.loginpage.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -30,9 +30,14 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final JwtUtil jwtUtil;
     private final CreditCommandService creditCommandService;
 
-    private static final String FRONTEND_URL = "http://localhost:4200/"; // ajuste em produção
+    @Value("${app.security.frontend-url:http://localhost:4200}")
+    private String frontendUrl;
+
+    @Value("${spring.profiles.active:dev}")
+    private String activeProfile;
+
     private static final String COOKIE_NAME = "JWT";
-    private static final int COOKIE_MAX_AGE = 60 * 60 * 24; // 1 dia (ajuste conforme política)
+    private static final int COOKIE_MAX_AGE = 60 * 60 * 24; // 1 dia
 
 
     @Override
@@ -63,14 +68,14 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             user.setCreditBalance(10);   // Bônus OAuth
             user = userRepository.save(user);
 
-            // ✅ CRIAR AuthAccountEntity para vincular com Google
+            // Criar AuthAccountEntity para vincular com Google
             AuthAccountEntity authAccount = new AuthAccountEntity();
             authAccount.setUser(user);
             authAccount.setProvider(AuthProvider.GOOGLE);
             authAccount.setProviderId(googleId);
             authAccountRepository.save(authAccount);
 
-            // ✅ REGISTRAR TRANSAÇÃO DE BÔNUS
+            // Registrar transação de bônus
             creditCommandService.execute(
                     TransactionType.BONUS,
                     user,
@@ -83,24 +88,21 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // Gerar token JWT
         String token = jwtUtil.generateToken(user.getUserId(), user.getEmail());
 
-
-        // Set cookie HttpOnly; em dev não colocamos Secure para localhost (em produção inclua Secure)
-        // Construímos o header manualmente para incluir SameSite.
-        String cookieHeader = String.format("%s=%s; Path=/; HttpOnly; Max-Age=%d; SameSite=Lax",
-                COOKIE_NAME, token, COOKIE_MAX_AGE);
-
-        // Em produção adicione ; Secure
-        boolean isProd = false; // se você tiver profile check, ajuste para true em prod
+        // Em produção: SameSite=None; Secure (necessário para cookies cross-origin com HTTPS)
+        // Em dev: SameSite=Lax sem Secure (funciona no localhost)
+        boolean isProd = "prod".equals(activeProfile);
+        String cookieHeader;
         if (isProd) {
-            cookieHeader = cookieHeader + "; Secure";
+            cookieHeader = String.format("%s=%s; Path=/; HttpOnly; Max-Age=%d; SameSite=None; Secure",
+                    COOKIE_NAME, token, COOKIE_MAX_AGE);
+        } else {
+            cookieHeader = String.format("%s=%s; Path=/; HttpOnly; Max-Age=%d; SameSite=Lax",
+                    COOKIE_NAME, token, COOKIE_MAX_AGE);
         }
 
-
-        // ✅ CORRIGIDO: Redirecionar para porta 4200 (Angular)
         response.setHeader("Set-Cookie", cookieHeader);
 
-        // Redireciona para frontend sem token na URL
-        // Também poderia sanitizar SavedRequest aqui; para simplicidade redirecionamos para root.
-        getRedirectStrategy().sendRedirect(request, response, FRONTEND_URL);
+        // Redireciona para o frontend configurado via properties
+        getRedirectStrategy().sendRedirect(request, response, frontendUrl);
     }
 }

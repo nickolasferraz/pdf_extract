@@ -103,6 +103,7 @@ jobs:
             HIBERNATE_DDL_AUTO=validate
             SHOW_SQL=false
             ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}
+            FRONTEND_URL=https://www.pdftoexcel.com.br
             EOF
             
             # Para containers antigos e sobe os novos

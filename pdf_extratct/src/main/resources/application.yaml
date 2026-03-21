@@ -126,6 +126,7 @@ app:
       - http://localhost:4200
       - http://localhost:8080
       - ${ALLOWED_ORIGINS:}
+    frontend-url: ${FRONTEND_URL:http://localhost:4200}
     ip-gated-paths:
       - /api/files
       - /api/pdf-to-excel
