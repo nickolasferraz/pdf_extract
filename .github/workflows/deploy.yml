@@ -78,6 +78,11 @@ jobs:
 
             cd ${{ secrets.APP_DIR }}
 
+            # Cria o arquivo de credenciais do Google a partir do secret
+            cat <<'EOF' > google-credentials.json
+            ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+            EOF
+
             cat <<EOF > .env
             DB_URL=${{ secrets.DB_URL }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
