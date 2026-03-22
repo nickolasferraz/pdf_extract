@@ -2,7 +2,7 @@ package com.example.pdf_extratct.readpdf.service.ReadProperties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties
+@ConfigurationProperties("storage")
 public class ReadExtractProperties {
     private String location="upload-dir";
 
