@@ -32,31 +32,30 @@ public class IpBlockService {
     public boolean registerAnonymousUse(String ip, int fileCount) {
 
         String blockKey = "ip:block:" + ip;
+        String counterKey = "anon:count:" + ip;
 
-        // 1️⃣ Se já estiver bloqueado, nem tenta incrementar
+        // 1️⃣ Já bloqueado? Rejeita
         if (redis.hasKey(blockKey)) {
             return false;
         }
 
-        String counterKey = "anon:count:" + ip;
+        // 2️⃣ Pega o valor atual (sem incrementar ainda)
+        String currentVal = redis.opsForValue().get(counterKey);
+        long currentCount = currentVal != null ? Long.parseLong(currentVal) : 0L;
 
-        Long currentCount = redis.opsForValue().increment(counterKey, fileCount);
-
-        // 2️⃣ Se for o primeiro uso, define TTL
-        if (currentCount != null && currentCount == fileCount) {
-            redis.expire(counterKey, Duration.ofDays(ANON_TTL_DAYS));
+        // 3️⃣ Verifica se o total vai ultrapassar o limite ANTES de incrementar
+        if (currentCount + fileCount > ANON_LIMIT) {
+            // Aplica bloqueio sem incrementar
+            redis.opsForValue().set(blockKey, "1", Duration.ofDays(BLOCK_TLL_DAYS));
+            return false;
         }
 
-        // 3️⃣ Se ultrapassou limite
-        if (currentCount != null && currentCount > ANON_LIMIT) {
+        // 4️⃣ Incrementa com segurança
+        Long newCount = redis.opsForValue().increment(counterKey, fileCount);
 
-            // desfaz o incremento
-            redis.opsForValue().decrement(counterKey, fileCount);
-
-            // aplica bloqueio temporário
-            redis.opsForValue().set(blockKey, "1", Duration.ofDays(BLOCK_TLL_DAYS));
-
-            return false;
+        // 5️⃣ Define TTL só na primeira vez
+        if (newCount != null && newCount == fileCount) {
+            redis.expire(counterKey, Duration.ofDays(ANON_TTL_DAYS));
         }
 
         return true;

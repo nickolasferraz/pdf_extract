@@ -42,6 +42,7 @@ Thumbs.db
 # Environment variables #
 .env
 .env.*
+variaveis-ambiente.txt
 
 # Uploaded files (assuming FileSystemStorageService stores them in a directory like 'uploads' or 'data')
 # If your FileSystemStorageService stores files in a different location, adjust this path.
