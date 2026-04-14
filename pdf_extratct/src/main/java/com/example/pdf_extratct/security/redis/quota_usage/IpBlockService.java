@@ -10,21 +10,20 @@ public class IpBlockService {
 
     private final StringRedisTemplate redis;
 
-    private static final int ANON_TTL_DAYS =30;
-    private static final int BLOCK_TLL_DAYS=1;
-    private static final int ANON_LIMIT=2;
-
+    private static final int ANON_TTL_DAYS = 30;
+    private static final int BLOCK_TLL_DAYS = 1;
+    private static final int ANON_LIMIT = 3;
 
     public IpBlockService(StringRedisTemplate redis) {
         this.redis = redis;
     }
-
 
     public boolean isBlocked(String ip) {
         String blockKey = "ip:block:" + ip;
         String val = redis.opsForValue().get(blockKey);
         return val != null;
     }
+
     /**
      * Registra um processamento anônimo e retorna true se permitido,
      * retorna false se atingiu limite e aplicou bloqueio.
@@ -39,14 +38,16 @@ public class IpBlockService {
             return false;
         }
 
-        // 2️⃣ Pega o valor atual (sem incrementar ainda)
+        // 2️⃣ Pega o valor atual sem incrementar
         String currentVal = redis.opsForValue().get(counterKey);
         long currentCount = currentVal != null ? Long.parseLong(currentVal) : 0L;
 
-        // 3️⃣ Verifica se o total vai ultrapassar o limite ANTES de incrementar
+        // 3️⃣ Verifica se o total futuro ultrapassa o limite
         if (currentCount + fileCount > ANON_LIMIT) {
-            // Aplica bloqueio sem incrementar
-            redis.opsForValue().set(blockKey, "1", Duration.ofDays(BLOCK_TLL_DAYS));
+            // Só aplica bloqueio se já usou algum arquivo antes
+            if (currentCount > 0) {
+                redis.opsForValue().set(blockKey, "1", Duration.ofDays(BLOCK_TLL_DAYS));
+            }
             return false;
         }
 
@@ -61,22 +62,16 @@ public class IpBlockService {
         return true;
     }
 
-
     public boolean registerAnonymousUse(String ip) {
         return registerAnonymousUse(ip, 1);
     }
 
+    public void refundAnonymousUse(String ip, int fileCount) {
+        String counterKey = "anon:count:" + ip;
+        Long val = redis.opsForValue().decrement(counterKey, fileCount);
 
-    public void refundAnonymousUse(String ip, int fileCount){ // Adicionado fileCount
-        String counterKey= "anon:count:" + ip; // Corrigido para usar ":"
-        Long val=redis.opsForValue().decrement(counterKey, fileCount); // Decrementa pelo número de arquivos
-
-        if (val != null && val <=0){
+        if (val != null && val <= 0) {
             redis.delete(counterKey);
         }
     }
-
-
-
-
 }
