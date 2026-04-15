@@ -3,6 +3,10 @@ name: Build & Deploy
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '*.png'
+      - 'README.md'
+      - 'docs/**'
 
 jobs:
 
