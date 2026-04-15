@@ -473,7 +473,7 @@ O `ApiLoggingInterceptor` implementa `HandlerInterceptor` do Spring MVC para reg
 
 ### Fluxo Principal — PDF para Excel
 
-![alt text](image-2.png)
+![alt text](image-1.png)
 
 O projeto utiliza um workflow de **Build & Deploy** automatizado via GitHub Actions, disparado a cada push na branch `main`.
 
