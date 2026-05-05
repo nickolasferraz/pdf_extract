@@ -126,8 +126,9 @@ app:
     allowed-origins:
       - http://localhost:4200
       - http://localhost:8080
+      - https://www.pdftoexcel.com.br
       - ${ALLOWED_ORIGINS:}
-    frontend-url: ${FRONTEND_URL:http://localhost:4200}
+    frontend-url: ${FRONTEND_URL:https://www.pdftoexcel.com.br}
     ip-gated-paths:
       - /api/files
       - /api/pdf-to-excel
