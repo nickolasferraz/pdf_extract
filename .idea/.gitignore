@@ -6,3 +6,5 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+
+pdf_extract/pdf_extratct.code-workspace
